@@ -1,11 +1,4 @@
 # shinyBioTools - shRNA Module
-library(Biostrings)
-library(httr)
-library(xml2)
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-library(org.Mm.eg.db)
-
 
 shRNAUI <- function(id) {
   ns <- NS(id)

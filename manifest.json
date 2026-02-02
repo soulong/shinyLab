@@ -3396,6 +3396,36 @@
         "Built": "R 4.5.1; ; 2025-08-20 02:17:05 UTC; windows"
       }
     },
+    "shinydashboard": {
+      "Source": "CRAN",
+      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "description": {
+        "Package": "shinydashboard",
+        "Title": "Create Dashboards with 'Shiny'",
+        "Version": "0.7.3",
+        "Authors@R": "c(\n    person(\"Winston\", \"Chang\", , \"winston@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Barbara\", \"Borges Ribeiro\", role = \"aut\"),\n    person(, \"Posit Software, PBC\", role = \"cph\"),\n    person(, \"Almasaeed Studio\", role = c(\"ctb\", \"cph\"),\n           comment = \"AdminLTE theme for Bootstrap\"),\n    person(, \"Adobe Systems Incorporated\", role = c(\"ctb\", \"cph\"),\n           comment = \"Source Sans Pro font\")\n  )",
+        "Description": "Create dashboards with 'Shiny'. This package provides a theme\n    on top of 'Shiny', making it easy to create attractive dashboards.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rstudio.github.io/shinydashboard/,\nhttps://github.com/rstudio/shinydashboard",
+        "BugReports": "https://github.com/rstudio/shinydashboard/issues",
+        "Depends": "R (>= 3.0)",
+        "Imports": "htmltools (>= 0.2.6), promises, shiny (>= 1.0.0), utils",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-04-21 16:14:20 UTC; garrick",
+        "Author": "Winston Chang [aut, cre],\n  Barbara Borges Ribeiro [aut],\n  Posit Software, PBC [cph],\n  Almasaeed Studio [ctb, cph] (AdminLTE theme for Bootstrap),\n  Adobe Systems Incorporated [ctb, cph] (Source Sans Pro font)",
+        "Maintainer": "Winston Chang <winston@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-04-21 21:30:02 UTC",
+        "Built": "R 4.5.2; ; 2026-01-23 03:41:57 UTC; windows",
+        "RemoteType": "standard",
+        "RemotePkgRef": "shinydashboard",
+        "RemoteRef": "shinydashboard",
+        "RemoteRepos": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+        "RemoteSha": "0.7.3"
+      }
+    },
     "snakecase": {
       "Source": "CRAN",
       "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
@@ -4003,6 +4033,34 @@
         "Built": "R 4.5.1; ; 2025-08-20 00:44:48 UTC; windows"
       }
     },
+    "writexl": {
+      "Source": "CRAN",
+      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "description": {
+        "Package": "writexl",
+        "Type": "Package",
+        "Title": "Export Data Frames to Excel 'xlsx' Format",
+        "Version": "1.5.4",
+        "Authors@R": "c(\n    person(\"Jeroen\", \"Ooms\", ,\"jeroenooms@gmail.com\", role = c(\"aut\", \"cre\"),\n      comment = c(ORCID = \"0000-0002-4035-0289\")),\n    person(\"John McNamara\", role = \"cph\",\n      comment = \"Author of libxlsxwriter (see AUTHORS and COPYRIGHT files for details)\"))",
+        "Description": "Zero-dependency data frame to xlsx exporter based on 'libxlsxwriter'\n    <https://libxlsxwriter.github.io>. Fast and no Java or Excel required.",
+        "License": "BSD_2_clause + file LICENSE",
+        "Encoding": "UTF-8",
+        "URL": "https://ropensci.r-universe.dev/writexl\nhttps://docs.ropensci.org/writexl/",
+        "BugReports": "https://github.com/ropensci/writexl/issues",
+        "RoxygenNote": "7.0.2",
+        "Suggests": "spelling, readxl, nycflights13, testthat, bit64",
+        "Language": "en-US",
+        "SystemRequirements": "zlib",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-04-15 13:34:41 UTC; jeroen",
+        "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>),\n  John McNamara [cph] (Author of libxlsxwriter (see AUTHORS and COPYRIGHT\n    files for details))",
+        "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-04-15 14:40:03 UTC",
+        "Built": "R 4.5.1; x86_64-w64-mingw32; 2025-08-20 00:45:54 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "xfun": {
       "Source": "CRAN",
       "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
@@ -4119,19 +4177,19 @@
       "checksum": "05bdb783ee6514c8c072e47680af8ff7"
     },
     "app.R": {
-      "checksum": "01baca65ade795275664252205b970f0"
+      "checksum": "a55c0c3d95777cc63280626d83429151"
     },
     "LICENSE": {
       "checksum": "768518fb1880e71abc16e4b1f6380513"
     },
     "R/mod_rtpcr.R": {
-      "checksum": "08d86f71391826d3b6e4dc2844530e93"
+      "checksum": "e01bc2556df484f9db944358527b6a21"
     },
     "R/mod_shrna.R": {
-      "checksum": "6278de19603638851c81af4be5c1c7e5"
+      "checksum": "fd4f8f9611f9ca467d7daa4b3babfbc8"
     },
     "R/utils.R": {
-      "checksum": "6bc83d52976303279784e0726508f8f0"
+      "checksum": "dd5f2a1b5d0c3a6a102bde37fd0e3dd3"
     },
     "README.md": {
       "checksum": "b0d29b198bc6847a7275a6e583b65658"

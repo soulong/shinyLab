@@ -1,6 +1,6 @@
 # shinyBioTools - rtPCR Module
-library(tidyverse)
 library(readxl)
+library(writexl)
 library(janitor)
 require(Hmisc)
 
@@ -8,7 +8,6 @@ rtPCRUI <- function(id) {
   ns <- NS(id)
   fluidRow(
     box(title="Settings", width=3, status="primary", solidHeader=TRUE,
-      # selectInput(ns("equip"), "Equipment", choices=c("Quantstudio_5", "Quantstudio_6")),
       fileInput(ns("userfile"), "Upload File", accept=c(".xls", ".xlsx")),
       selectInput(ns("target"), "Targets", choices=NULL, multiple=TRUE),
       selectInput(ns("sample"), "Samples", choices=NULL, multiple=TRUE),
@@ -24,7 +23,6 @@ rtPCRUI <- function(id) {
       tabsetPanel(
         tabPanel("Facet Plot",
           fluidRow(
-            # column(9, uiOutput(ns("plot_facet_ui"))),
             column(9, plotOutput(ns("facet_plot"))),
             column(3,
               sliderInput(ns("w_facet"), "Width", 300, 1200, 700, 50),
@@ -36,7 +34,6 @@ rtPCRUI <- function(id) {
         ),
         tabPanel("Combined Plot",
           fluidRow(
-            # column(9, uiOutput(ns("plot_combine_ui"))),
             column(9, plotOutput(ns("combine_plot"))),
             column(3,
               sliderInput(ns("w_comb"), "Width", 300, 1200, 700, 50),
@@ -48,8 +45,6 @@ rtPCRUI <- function(id) {
         ),
         tabPanel("Data",
           tableOutput(ns("table_summary")), hr(),
-          # h5("NA Samples:"), verbatimTextOutput(ns("na_sample")),
-          # h5("NA Targets:"), verbatimTextOutput(ns("na_target"))
         ),
         tabPanel("Melt Curve",
           plotOutput(ns("plot_mc_1"), width="100%", height="300px"), hr(),
@@ -72,9 +67,7 @@ rtPCRServer <- function(id) {
       new_path <- paste0(input$userfile$datapath, ".xlsx")
       file.rename(input$userfile$datapath, new_path)
       # new_path <- "C:\\Users\\haohe\\Desktop\\gy20260121 TEAD CIP P51 P53 TRULI CTGF CYR61_Copy_20260121_100251_Admin_Results_20260121_120831.xlsx"
-      # rv$real_file <- new_path
-      # skip <- if (input$equip == "Quantstudio_5") 47 else 42
-      
+
        # find start row
       for(row_x in 24:50) {
         # print(row_x)
@@ -86,7 +79,7 @@ rtPCRServer <- function(id) {
       ct <- ct %>% 
         dplyr::select(2,4,5,13) %>% 
         set_names(c("well", "sample", "target", "ct")) %>% 
-        janitor::remove_empty('rows') %>% print()
+        janitor::remove_empty('rows') #%>% print()
       rv$ct <- ct
       
       # deal with MC data
@@ -98,7 +91,7 @@ rtPCRServer <- function(id) {
           dplyr::select(2,4:7) %>% 
           set_names(c("well", "target", "temperature", "fluorescence", "derivative")) %>% 
           janitor::remove_empty('rows') %>% 
-          left_join(ct[, 1:3]) %>% print()
+          left_join(ct[, 1:3]) #%>% print()
         rv$mc <- mc
       }
 
@@ -120,9 +113,6 @@ rtPCRServer <- function(id) {
           mutate(mean=mean(ct, na.rm=T), .by=c(sample, target)) %>% 
           mutate(ct=ifelse(is.na(ct), rnorm(1, mean, sd=0.5), ct))
       }
-      # na_samples <- unique(ct_filtered$sample) %>% na.omit()
-      # na_targets <- unique(ct_filtered$target) %>% na.omit()
-    
       
       # calculate dCT
       ref_target <- ct_filtered %>% 
@@ -146,7 +136,7 @@ rtPCRServer <- function(id) {
                dd_ct_2n_mean=mean(dd_ct_2n, na.rn=T), .by=c(sample, target)
                )
       
-      # norm ref_sample == 1
+      # norm ref_sample to 1
       ref_norm_factor <- dd_ct %>% 
         # dplyr::filter(sample == "1") %>% 
         dplyr::filter(sample == input$sample[1]) %>%
@@ -155,8 +145,7 @@ rtPCRServer <- function(id) {
         left_join(ref_norm_factor) %>% 
         mutate(dd_ct_2n_norm=dd_ct_2n / norm_factor) %>% 
         dplyr::select(well, sample, target, ct, 
-                      d_ct, dd_ct, dd_ct_2n, dd_ct_2n_norm) %>% 
-        print()
+                      d_ct, dd_ct, dd_ct_2n, dd_ct_2n_norm) #%>% print()
       
       # update data
       rv$result <- dd_ct_final
@@ -233,7 +222,7 @@ rtPCRServer <- function(id) {
           str_c("_qpcr_data.xlsx")
       },
       content = function(file) {
-        write_xlsx(rv$result, file)  # Write tibble to XLSX
+        write_xlsx(rv$result, file)
       })
     
   })

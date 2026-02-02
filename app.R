@@ -1,28 +1,17 @@
-# shinyBioTools - Main Application
 # Deploy: rsconnect::deployApp()
 
-required_pkgs <- c("shiny", "shinydashboard", "ggplot2", "dplyr", "readxl",
-                   "writexl", "Biostrings", "httr", "xml2", "AnnotationDbi",
-                   "org.Hs.eg.db", "org.Mm.eg.db")
-
-missing <- required_pkgs[!sapply(required_pkgs, requireNamespace, quietly = TRUE)]
-if (length(missing) > 0) {
-  stop("Missing packages: ", paste(missing, collapse = ", "))
-}
-
-for (pkg in required_pkgs) {
-  suppressPackageStartupMessages(library(pkg, character.only = TRUE))
-}
-
-
-options(shiny.maxRequestSize=100*1024^2)
-
+library(shiny)
+library(shinydashboard)
+library(tidyverse)
 
 source("R/utils.R")
 source("R/mod_rtpcr.R")
 source("R/mod_shrna.R")
 
-# UI
+options(shiny.maxRequestSize=100*1024^2)
+
+
+
 ui <- dashboardPage(
   dashboardHeader(title = "shinyBioTools"),
   dashboardSidebar(
@@ -41,10 +30,11 @@ ui <- dashboardPage(
   )
 )
 
-# Server
+
 server <- function(input, output, session) {
   rtPCRServer("rtPCR")
   shRNAServer("shRNA")
 }
+
 
 shinyApp(ui = ui, server = server)
