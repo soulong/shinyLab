@@ -64,15 +64,24 @@ rtPCRServer <- function(id) {
     observeEvent(input$userfile, {
       req(input$userfile)
       
-      new_path <- paste0(input$userfile$datapath, ".xlsx")
-      file.rename(input$userfile$datapath, new_path)
-      # new_path <- "C:\\Users\\haohe\\Desktop\\gy20260121 TEAD CIP P51 P53 TRULI CTGF CYR61_Copy_20260121_100251_Admin_Results_20260121_120831.xlsx"
+new_path <- paste0(input$userfile$datapath, ".xlsx")
+      if (!file.rename(input$userfile$datapath, new_path)) {
+        showNotification("Failed to rename uploaded file", type = "error")
+        return()
+      }
 
-       # find start row
-      for(row_x in 24:50) {
-        # print(row_x)
-        suppressMessages(ct <- read_excel(new_path, sheet='Results', skip=row_x))
-        if(colnames(ct)[1] == 'Well') break
+      row_x <- NULL
+      for (i in 24:50) {
+        suppressMessages(ct <- read_excel(new_path, sheet='Results', skip=i))
+        if (colnames(ct)[1] == 'Well') {
+          row_x <- i
+          break
+        }
+      }
+      
+      if (is.null(row_x)) {
+        showNotification("Could not find valid data starting row in the file", type = "error")
+        return()
       }
       
       # deal with CT data
@@ -133,7 +142,7 @@ rtPCRServer <- function(id) {
         left_join(ref_sample) %>% 
         mutate(dd_ct=d_ct - ref_sample_mean) %>% 
         mutate(dd_ct_2n=2^dd_ct, 
-               dd_ct_2n_mean=mean(dd_ct_2n, na.rn=T), .by=c(sample, target)
+               dd_ct_2n_mean=mean(dd_ct_2n, na.rm=TRUE), .by=c(sample, target)
                )
       
       # norm ref_sample to 1
@@ -216,7 +225,7 @@ rtPCRServer <- function(id) {
     
     output$download_data <- downloadHandler(
       filename = function() {
-        str_split(as.character(Sys.time()), pattern='\\.', simplify=T)[1] %>% 
+        str_split(as.character(Sys.time()), pattern='\\.', simplify=TRUE)[1] %>% 
           str_replace_all(":", "") %>% 
           str_replace_all(" ", "_") %>% 
           str_c("_qpcr_data.xlsx")

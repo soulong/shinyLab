@@ -105,7 +105,7 @@ synergyServer <- function(id) {
         old_wd <- getwd()
         setwd(data()$tmpdir)
         on.exit(setwd(old_wd))
-        zip(zipfile = fname, files = data()$res_files)
+        zip::zip(zipfile = fname, files = data()$res_files)
       },
       contentType = "application/zip"
     )
