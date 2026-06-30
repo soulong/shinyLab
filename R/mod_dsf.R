@@ -4,12 +4,124 @@
 library(patchwork)
 library(mgcv)
 library(gratia)
-library(rcdk)
+# library(rcdk)
 library(rio)
 library(DT)
 library(zip)
 library(janitor)
 options(rio.import.class='tbl')
+
+# =============================================================================
+# Plot Helper Functions
+# =============================================================================
+
+build_scatter_plot <- function(df, x, y, color_col, facet_vars, 
+                                xlim_min = NULL, xlim_max = NULL,
+                                hline_y = NULL, ncol = 4) {
+  use_color <- color_col != "" && color_col %in% names(df)
+  
+  if (use_color) {
+    p <- ggplot(df, aes(x = .data[[x]], y = .data[[y]], color = .data[[color_col]])) +
+      geom_point()
+  } else {
+    p <- ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
+      geom_point()
+  }
+  
+  if (!is.null(hline_y)) {
+    p <- p + geom_hline(yintercept = hline_y, linetype = "dashed", color = "gray50")
+  }
+  
+  if (length(facet_vars) > 0 && !all(facet_vars == "")) {
+    p <- p + facet_wrap(as.formula(paste("~", paste(facet_vars, collapse = " + "))), 
+                        scales = "fixed", ncol = ncol)
+  }
+  
+  p <- p + theme_bw() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+  
+  if (!is.null(xlim_min) || !is.null(xlim_max)) {
+    p <- p + coord_cartesian(xlim = c(
+      if (is.null(xlim_min)) NA_real_ else xlim_min,
+      if (is.null(xlim_max)) NA_real_ else xlim_max
+    ))
+  }
+  
+  p
+}
+
+
+build_curve_plot <- function(data, ref_ligand_val, color_by, facet_vars,
+                              is_derivative = FALSE, x_limits = NULL, ncol = 4) {
+  has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && 
+             ref_ligand_val %in% data$ligand
+  is_valid_color <- !is.null(color_by) && color_by != "" && 
+                    color_by %in% names(data) && color_by != "ligand"
+  is_color_numeric <- if (is_valid_color) is.numeric(data[[color_by]]) else FALSE
+  
+  geom_fn <- if (is_derivative) geom_line else geom_path
+  y_var <- if (is_derivative) "derivative" else "fluorescence"
+  
+  p <- ggplot()
+  
+  if (has_ref) {
+    p <- p + geom_fn(
+      data = filter(data, ligand == ref_ligand_val),
+      aes(temperature, .data[[y_var]], group = well),
+      color = 'grey50'
+    )
+  }
+  
+  filter_data <- if (has_ref) filter(data, ligand != ref_ligand_val) else data
+  
+  if (is_valid_color) {
+    p <- p + geom_fn(
+      data = filter_data,
+      aes(temperature, .data[[y_var]], group = well, color = .data[[color_by]])
+    )
+    if (is_color_numeric) {
+      p <- p + scale_color_viridis_c(option = 'C', na.value = 'darkred')
+    } else {
+      p <- p + scale_color_viridis_d(option = 'C', na.value = 'darkred')
+    }
+  } else {
+    p <- p + geom_fn(
+      data = filter_data,
+      aes(temperature, .data[[y_var]], group = well),
+      color = 'darkred'
+    )
+  }
+  
+  if (length(facet_vars) > 0 && !all(facet_vars == "")) {
+    p <- p + facet_wrap(as.formula(paste("~", paste(facet_vars, collapse = " + "))), 
+                        ncol = ncol)
+  }
+  
+  p <- p + theme_bw() + theme(legend.position = 'top')
+  
+  if (!is.null(x_limits)) {
+    p <- p + coord_cartesian(xlim = x_limits)
+  }
+  
+  p
+}
+
+
+compute_derivatives <- function(mc_tidy) {
+  mc_tidy %>%
+    filter(!is.na(ligand), !is.na(target)) %>%
+    nest(.by = c(plate, target, ligand, well)) %>%
+    mutate(pred = purrr::map(data, \(d) {
+      tryCatch({
+        mod <- mgcv::gam(fluorescence ~ s(temperature), data = d)
+        res <- gratia::derivatives(mod, n = 100, order = 1)
+        tibble(temperature = res$temperature,
+               derivative = res$.derivative)
+      }, error = function(e) NULL)
+    })) %>%
+    unnest(pred) %>%
+    filter(!is.na(derivative))
+}
 
 # =============================================================================
 # UI Function
@@ -20,16 +132,17 @@ dsfUI <- function(id) {
   fluidRow(
     column(width = 3,
       box(title = "File Upload", width = 12, status = "primary", solidHeader = TRUE,
-        fileInput(ns("file_analysis"), "Analysis Results (.txt)", 
-                  accept = c(".txt", ".tsv")),
-        fileInput(ns("file_rawdata"), "Raw Data Files (multiple)", 
+        fileInput(ns("file_analysis"), "Analysis Data Files (multiple)", 
                   accept = c(".txt", ".tsv"), multiple = TRUE),
-        checkboxInput(ns("use_custom_metadata"), "Use custom metadata file", value = FALSE),
+        checkboxInput(ns("use_custom_metadata"), "Use custom metadata file", value = TRUE),
         conditionalPanel(
           condition = "input.use_custom_metadata == true",
           ns = ns,
-          fileInput(ns("file_metadata"), "Plate Info (.xlsx)", accept = ".xlsx")
+          fileInput(ns("file_metadata"), "Plate meta (.xlsx)", accept = ".xlsx")
         ),
+        radioButtons(ns("tm_type"), "Tm Calculation",
+                     choices = c("Tm (Derivative)" = "tm_d", "Tm (Boltzmann)" = "tm_b"),
+                     selected = "tm_d", inline = FALSE),
         hr(),
         actionButton(ns("submit"), "Submit", icon = icon("play"), class = "btn-primary"),
         br(), br(),
@@ -47,6 +160,7 @@ dsfUI <- function(id) {
         hr(),
         sliderInput(ns("plot_width"), "Plot Width", 4, 16, 7, 1),
         sliderInput(ns("plot_height"), "Plot Height", 4, 16, 5, 1),
+        numericInput(ns("facet_ncol"), "Facet Columns", value = 4, min = 1, max = 12),
         hr(),
         numericInput(ns("xlim_min"), "X Min", value = NULL),
         numericInput(ns("xlim_max"), "X Max", value = NULL)
@@ -59,20 +173,20 @@ dsfUI <- function(id) {
             DT::dataTableOutput(ns("data_preview"))
           ),
           tabPanel("TM Scatter",
-            plotOutput(ns("plot_tm"), height = "600px")
+            uiOutput(ns("plot_tm_wrapper"))
           ),
           tabPanel("Delta TM Scatter",
-            plotOutput(ns("plot_dtm"), height = "600px")
+            uiOutput(ns("plot_dtm_wrapper"))
           ),
           tabPanel("Raw Curves",
-            plotOutput(ns("plot_raw"), height = "600px")
+            uiOutput(ns("plot_raw_wrapper"))
           ),
           tabPanel("Derivative Curves",
-            plotOutput(ns("plot_deri"), height = "600px")
+            uiOutput(ns("plot_deri_wrapper"))
           ),
           tabPanel("Ligand Details",
             uiOutput(ns("ligand_selector")),
-            plotOutput(ns("plot_ligand_detail"), height = "500px")
+            uiOutput(ns("plot_ligand_detail_wrapper"))
           )
         )
       )
@@ -93,7 +207,7 @@ dsfServer <- function(id) {
       data = NULL,
       df_wide = NULL,
       mc_tidy = NULL,
-      info = NULL,
+      meta = NULL,
       has_ref_ligand = FALSE,
       ref_ligand_val = "",
       error_message = NULL
@@ -104,108 +218,143 @@ dsfServer <- function(id) {
     # =========================================================================
     data <- eventReactive(input$submit, {
       req(input$file_analysis)
-      req(input$file_rawdata)
-      
+
       tryCatch({
         withProgress(message = 'Processing data...', value = 0, {
           
-          incProgress(0.2, detail = "Reading analysis results...")
+          incProgress(0.0, message = "Reading analysis results...")
+          
+          all_files <- input$file_analysis$datapath %>% 
+            set_names(., nm = input$file_analysis$name)
           
           # Read analysis results
-          raw <- import(input$file_analysis$datapath) %>%
-            janitor::clean_names()
+          res_file <- names(all_files) %>% 
+            str_detect("AnalysisResults") %>% 
+            which() %>% all_files[.]
+          if(length(res_file) == 0) {
+            stop("No AnalysisResults file found in the uploaded files")
+          }
+          if(length(res_file) > 1) {
+            stop("Multiple AnalysisResults files detected. Please upload only one.")
+          }
+          res <- import(res_file) %>%
+            janitor::clean_names() %>% 
+            janitor::remove_empty('cols') %>% 
+            dplyr::rename(plate = experiment_file_name) %>%
+            mutate(tm = .data[[input$tm_type]],
+                   well = transform_well_style(well),
+                   plate = str_remove(plate, "\\.eds$") )
           
-          incProgress(0.2, detail = "Reading metadata...")
-          
+          incProgress(0.2, message = "Reading metadata...")
           # Conditionally read metadata
           if (input$use_custom_metadata) {
             req(input$file_metadata)
-            info <- read_metadata(input$file_metadata$datapath) %>%
-              janitor::remove_constant()
+            meta_files <- input$file_metadata$datapath %>% 
+              set_names(., str_remove(input$file_metadata$name, "\\.(eds\\.)?xlsx$"))
+            meta <- meta_files %>% 
+              map(read_metadata) %>% 
+              list_rbind(., names_to="plate")
+            if(!all(c("target", "ligand") %in% colnames(meta))) {
+              stop("Custom metadata must contain 'target' and 'ligand' columns")
+            }
+            # inner_join: keep only (plate, well) present in BOTH res and meta
+            merged <- res %>% 
+              inner_join(meta, by = c("plate", "well"))
             
-            # Merge data
-            merged <- raw %>%
-              janitor::remove_empty('cols') %>%
-              mutate(well = transform_well_style(well)) %>%
-              select(plate = experiment_file_name, well, tm = tm_d) %>%
-              mutate(plate = map_chr(plate, \(x) str_replace_all(x, '.*_Admin_', '') %>%
-                                       str_replace_all('.eds', ''))) %>%
-              right_join(info, .)
           } else {
-            # Validate required columns
-            if (!all(c("target", "ligand") %in% colnames(raw))) {
+            if (!all(c("target", "ligand") %in% colnames(res))) {
               stop("AnalysisResults must contain 'target' and 'ligand' columns when not using custom metadata")
             }
-            
-            # Extract relevant columns from raw data
-            merged <- raw %>%
-              janitor::remove_empty('cols') %>%
-              mutate(well = transform_well_style(well)) %>%
-              select(plate = experiment_file_name,
-                     well,
-                     target,
-                     ligand,
-                     tm = tm_d,
-                     any_of(c("conc", "smiles"))) %>%
-              mutate(plate = map_chr(plate, \(x) str_replace_all(x, '.*_Admin_', '') %>%
-                                       str_replace_all('.eds', '')))
-            
-            # Create info dataframe
-            info <- merged %>%
-              select(any_of(c("plate", "well", "target", "ligand", "conc", "smiles"))) %>%
+            merged <- res %>%
+              dplyr::select(plate, well, target, ligand, tm,
+                     any_of(c("conc", "smiles")))
+            meta <- merged %>%
+              dplyr::select(any_of(c("plate", "well", "target", "ligand", "conc", "smiles"))) %>%
               distinct()
           }
-          
+
+          # Explicit filter: keep only rows with non-NA ligand and target
           merged <- merged %>%
             filter(!is.na(ligand), !is.na(target)) %>%
-            relocate(plate, well, target, .before = 1) %>%
+            {if("conc" %in% colnames(.)) mutate(., conc = as.numeric(conc)) else .} %>% 
             relocate(tm, .after = last_col())
-          
-          # Add conc as numeric if exists
-          if ("conc" %in% colnames(merged)) {
-            merged <- merged %>% mutate(conc = as.numeric(conc))
+
+          incProgress(0.2, message = "Processing melting curve...")
+          # Read raw data files with stricter plate name matching
+          match_mc_files <- c()
+          for(x in unique(res$plate)) {
+            pattern <- paste0("RawData_", x, "\\.eds\\.txt$")
+            match_idx <- which(str_detect(names(all_files), pattern))
+            if (length(match_idx) == 0) {
+              # Fallback: match plate name before .eds.txt
+              match_idx <- which(str_detect(names(all_files), 
+                paste0(x, "\\.eds\\.txt$")))
+            }
+            if(length(match_idx) >= 1) {
+              matched <- all_files[match_idx[1]]
+              names(matched) <- x
+              match_mc_files <- c(match_mc_files, matched)
+            }
           }
           
-          incProgress(0.2, detail = "Processing raw data...")
+          if (length(match_mc_files) == 0) {
+            stop("No matching raw data files found for any plate")
+          }
           
-          # Read raw data files
-          mc1 <- input$file_rawdata$datapath %>%
-            set_names(nm = map_chr(input$file_rawdata$name, \(x) str_replace_all(x, '.*_Admin_', '') %>%
-                                                          str_replace_all('.eds.txt', ''))) %>%
+          mc <- match_mc_files %>% 
             map(\(x) import(x)) %>%
             list_rbind(names_to = 'plate') %>%
             janitor::clean_names() %>%
-            select(!c(well)) %>%
-            rename(well = well_position) %>%
-            mutate(well = transform_well_style(well))
-          
-          incProgress(0.2, detail = "Merging raw data...")
-          
-          # Tidy raw data
-          mc_tidy <- mc1 %>%
-            left_join(info) %>%
+            dplyr::select(!c(well)) %>%
+            dplyr::rename(well = well_position) %>%
+            mutate(well = transform_well_style(well)) %>% 
             mutate(temperature = as.numeric(temperature),
-                   fluorescence = as.numeric(fluorescence)) %>%
-            reframe(fluorescence = mean(fluorescence), 
-                    .by = c(plate, well, target, ligand, temperature)) %>%
-            filter(!is.na(ligand), !is.na(target))
+                   fluorescence = as.numeric(fluorescence))
           
-          # Create wide format (without d_tm, will be calculated later)
-          df_wide_base <- merged %>%
-            select(-any_of("tm"))
+          incProgress(0.25, detail = "Merging with raw data...")
+          mc_tidy <- mc %>%
+            inner_join(merged %>% dplyr::select(plate, well, target, ligand) %>% distinct(),
+                      by = c("plate", "well"))
           
-          incProgress(0.2, detail = "Done!")
+          incProgress(0.3, detail = "Computing derivatives...")
+          derivatives <- compute_derivatives(mc_tidy)
           
-          rv$info <- info
+          # Auto-detect reference values
+          ligand_choices <- sort(unique(meta$ligand))
+          ref_ligand_default <- find_best_match(ligand_choices, c("blank", "dmso", "pbs"))
+          
+          # Auto-compute d_tm with detected reference
+          has_ref_ligand <- ref_ligand_default != "" && ref_ligand_default %in% merged$ligand
+          
+          if (has_ref_ligand) {
+            ref <- merged %>%
+              filter(ligand == ref_ligand_default) %>%
+              reframe(tm_ref = median(tm, na.rm = TRUE), .by = c(plate, target))
+            
+            merged_with_dtm <- merged %>%
+              left_join(ref, by = c("plate", "target")) %>%
+              mutate(d_tm = tm - tm_ref) %>%
+              dplyr::select(!tm_ref)
+          } else {
+            merged_with_dtm <- merged %>% mutate(d_tm = NA_real_)
+          }
+          
+          incProgress(0.35, detail = "Done!")
+          
+          rv$meta <- meta
           rv$mc_tidy <- mc_tidy
+          rv$derivatives <- derivatives
+          rv$auto_ref_ligand <- ref_ligand_default
+          rv$ref_ligand_val <- ref_ligand_default
+          rv$has_ref_ligand <- has_ref_ligand
+          rv$cached_df_with_dtm <- merged_with_dtm
           
           return(list(
-            df_base = merged,  # Base data without d_tm
-            df_wide_base = df_wide_base,
+            merged = merged_with_dtm,
             mc_tidy = mc_tidy, 
-            info = info,
-            ligand_choices = sort(unique(info$ligand)),
-            target_choices = sort(unique(info$target))
+            meta = meta,
+            derivatives = derivatives,
+            ligand_choices = ligand_choices
           ))
         })
       }, error = function(e) {
@@ -221,23 +370,10 @@ dsfServer <- function(id) {
     # =========================================================================
     output$ref_selectors <- renderUI({
       req(data())
-      
-      ligand_choices <- data()$ligand_choices
-      target_choices <- data()$target_choices
-      
-      # Auto-select ref_ligand
-      ref_ligand_default <- find_best_match(ligand_choices, c("blank", "dmso", "pbs"))
-      
-      # Auto-select ref_target
-      ref_target_default <- find_best_match(target_choices, c("blank", "empty", "noprotein", "no_protein"))
-      
       tagList(
         selectInput(ns("ref_ligand_input"), "Reference Ligand",
-                    choices = ligand_choices,
-                    selected = ref_ligand_default),
-        selectInput(ns("ref_target_input"), "Reference Target",
-                    choices = target_choices,
-                    selected = ref_target_default)
+                    choices = data()$ligand_choices,
+                    selected = rv$auto_ref_ligand)
       )
     })
     
@@ -245,39 +381,45 @@ dsfServer <- function(id) {
     # Calculate d_tm reactively when ref changes
     # =========================================================================
     df_with_dtm <- reactive({
-      req(data())
+      req(data(), input$ref_ligand_input)
       
-      df_base <- data()$df_base
+      merged <- data()$merged
       ref_ligand_val <- input$ref_ligand_input
       
-      # Validate
       if (is.null(ref_ligand_val) || ref_ligand_val == "") {
         rv$has_ref_ligand <- FALSE
         rv$ref_ligand_val <- ""
-        return(df_base %>% mutate(d_tm = NA_real_))
+        return(merged %>% mutate(d_tm = NA_real_))
       }
       
-      if (!ref_ligand_val %in% df_base$ligand) {
+      if (!ref_ligand_val %in% merged$ligand) {
         showNotification(paste("Reference ligand", ref_ligand_val, "not found in data"), 
                          type = "warning", duration = 5)
         rv$has_ref_ligand <- FALSE
         rv$ref_ligand_val <- ""
-        return(df_base %>% mutate(d_tm = NA_real_))
+        return(merged %>% mutate(d_tm = NA_real_))
       }
       
-      # Calculate Delta TM
-      ref <- df_base %>%
-        filter(ligand == ref_ligand_val) %>%
-        reframe(tm_ref = median(tm), .by = c(target))
+      # Use cached result if ref hasn't changed from auto-detected default
+      if (!is.null(rv$cached_df_with_dtm) && 
+          ref_ligand_val == rv$auto_ref_ligand &&
+          rv$ref_ligand_val == ref_ligand_val) {
+        rv$has_ref_ligand <- TRUE
+        return(rv$cached_df_with_dtm)
+      }
       
-      df <- df_base %>%
-        left_join(ref, by = "target") %>%
+      # Recompute with new reference
+      ref <- merged %>%
+        filter(ligand == ref_ligand_val) %>%
+        reframe(tm_ref = median(tm, na.rm = TRUE), .by = c(plate, target))
+      
+      df <- merged %>%
+        left_join(ref, by = c("plate", "target")) %>%
         mutate(d_tm = tm - tm_ref) %>%
-        select(!tm_ref)
+        dplyr::select(!tm_ref)
       
       rv$has_ref_ligand <- TRUE
       rv$ref_ligand_val <- ref_ligand_val
-      
       return(df)
     })
     
@@ -286,16 +428,14 @@ dsfServer <- function(id) {
       req(df_with_dtm())
       
       df <- df_with_dtm()
-      info <- data()$info
+      meta <- data()$meta
       
-      df_wide <- df %>%
-        pivot_wider(id_cols = any_of(setdiff(colnames(info), 'well')),
+      df %>%
+        pivot_wider(id_cols = any_of(c("plate", setdiff(colnames(meta), c("well", "target")))),
                     names_from = target, values_from = d_tm,
                     names_prefix = 'dTM_',
                     values_fn = median) %>%
         mutate(across(where(is.numeric), \(x) round(x, 3)))
-      
-      return(df_wide)
     })
     
     # =========================================================================
@@ -303,7 +443,7 @@ dsfServer <- function(id) {
     # =========================================================================
     observeEvent(data(), {
       req(data())
-      df <- data()$df_base
+      df <- data()$merged
       
       col_choices <- colnames(df)
       
@@ -314,56 +454,73 @@ dsfServer <- function(id) {
     })
     
     # =========================================================================
+    # Plot wrappers (dynamic width/height)
+    # =========================================================================
+    output$plot_tm_wrapper <- renderUI({
+      list(input$plot_width, input$plot_height)
+      div(
+        style = sprintf("width: %sin;", input$plot_width),
+        plotOutput(ns("plot_tm"), height = sprintf("%sin", input$plot_height))
+      )
+    })
+    
+    output$plot_dtm_wrapper <- renderUI({
+      list(input$plot_width, input$plot_height)
+      div(
+        style = sprintf("width: %sin;", input$plot_width),
+        plotOutput(ns("plot_dtm"), height = sprintf("%sin", input$plot_height))
+      )
+    })
+    
+    output$plot_raw_wrapper <- renderUI({
+      list(input$plot_width, input$plot_height)
+      div(
+        style = sprintf("width: %sin;", input$plot_width),
+        plotOutput(ns("plot_raw"), height = sprintf("%sin", input$plot_height))
+      )
+    })
+    
+    output$plot_deri_wrapper <- renderUI({
+      list(input$plot_width, input$plot_height)
+      div(
+        style = sprintf("width: %sin;", input$plot_width),
+        plotOutput(ns("plot_deri"), height = sprintf("%sin", input$plot_height))
+      )
+    })
+    
+    output$plot_ligand_detail_wrapper <- renderUI({
+      list(input$plot_width, input$plot_height)
+      div(
+        style = sprintf("width: %sin;", input$plot_width),
+        plotOutput(ns("plot_ligand_detail"), height = sprintf("%sin", input$plot_height + 1))
+      )
+    })
+    
+    # =========================================================================
     # TM Scatter Plot
     # =========================================================================
     output$plot_tm <- renderPlot({
-      req(data())
-      req(df_with_dtm())
+      req(data(), df_with_dtm())
       
-      withProgress(message = 'Rendering plot...', value = 0, {
-        incProgress(0.3, detail = "Preparing data...")
-        
-        df <- df_with_dtm()
-        color_col <- input$color_var
-        use_color <- color_col != "" && color_col %in% names(df)
-        
-        p <- df %>%
-          mutate(tm = ifelse(tm > 100, 100, ifelse(tm < 0, 0, tm)))
-        
-        if (use_color) {
-          p <- p %>%
-            ggplot(aes(x = ligand, y = tm, color = .data[[color_col]])) +
-            geom_point(show.legend = TRUE)
-        } else {
-          p <- p %>%
-            ggplot(aes(x = ligand, y = tm)) +
-            geom_point(show.legend = FALSE)
-        }
-        
-        if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-          p <- p + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                              scales = "fixed")
-        }
-        
-        p <- p + theme_bw() + 
-          theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-        
-        if (!is.null(input$xlim_min) && !is.null(input$xlim_max)) {
-          p <- p + coord_cartesian(xlim = c(input$xlim_min, input$xlim_max))
-        }
-        
-        incProgress(0.7, detail = "Finalizing...")
-        
-        print(p)
-      })
+      # Explicitly register all plot parameter reactive dependencies
+      list(input$color_var, input$facet_vars, input$xlim_min, input$xlim_max, 
+           input$facet_ncol, input$plot_width, input$plot_height)
+      
+      df <- df_with_dtm() %>%
+        mutate(tm = ifelse(tm > 100, 100, ifelse(tm < 0, 0, tm)))
+      
+      build_scatter_plot(df, "ligand", "tm", input$color_var, input$facet_vars,
+                          input$xlim_min, input$xlim_max, ncol = input$facet_ncol)
     })
     
     # =========================================================================
     # Delta TM Scatter Plot
     # =========================================================================
     output$plot_dtm <- renderPlot({
-      req(data())
-      req(df_with_dtm())
+      req(data(), df_with_dtm())
+      
+      list(input$color_var, input$facet_vars, input$xlim_min, input$xlim_max, 
+           input$facet_ncol, input$plot_width, input$plot_height)
       
       if (!rv$has_ref_ligand) {
         plot(NULL, xlim = c(0, 1), ylim = c(0, 1), 
@@ -373,44 +530,11 @@ dsfServer <- function(id) {
         return(NULL)
       }
       
-      withProgress(message = 'Rendering plot...', value = 0, {
-        incProgress(0.3, detail = "Preparing data...")
-        
-        df <- df_with_dtm()
-        color_col <- input$color_var
-        use_color <- color_col != "" && color_col %in% names(df)
-        
-        p <- df %>%
-          mutate(d_tm = ifelse(d_tm > 10, 10, ifelse(d_tm < -10, -10, d_tm)))
-        
-        if (use_color) {
-          p <- p %>%
-            ggplot(aes(x = ligand, y = d_tm, color = .data[[color_col]])) +
-            geom_point(show.legend = TRUE)
-        } else {
-          p <- p %>%
-            ggplot(aes(x = ligand, y = d_tm)) +
-            geom_point(show.legend = FALSE)
-        }
-        
-        p <- p + geom_hline(yintercept = 0, linetype = "dashed", color = "gray50")
-        
-        if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-          p <- p + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                              scales = "fixed")
-        }
-        
-        p <- p + theme_bw() + 
-          theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-        
-        if (!is.null(input$xlim_min) && !is.null(input$xlim_max)) {
-          p <- p + coord_cartesian(xlim = c(input$xlim_min, input$xlim_max))
-        }
-        
-        incProgress(0.7, detail = "Finalizing...")
-        
-        print(p)
-      })
+      df <- df_with_dtm() %>%
+        mutate(d_tm = ifelse(d_tm > 10, 10, ifelse(d_tm < -10, -10, d_tm)))
+      
+      build_scatter_plot(df, "ligand", "d_tm", input$color_var, input$facet_vars,
+                          input$xlim_min, input$xlim_max, hline_y = 0, ncol = input$facet_ncol)
     })
     
     # =========================================================================
@@ -419,72 +543,10 @@ dsfServer <- function(id) {
     output$plot_raw <- renderPlot({
       req(data())
       
-      withProgress(message = 'Rendering plot...', value = 0, {
-        incProgress(0.3, detail = "Preparing data...")
-        
-        mc_tidy <- data()$mc_tidy
-        
-        ref_ligand_val <- rv$ref_ligand_val
-        has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && ref_ligand_val %in% mc_tidy$ligand
-        
-        color_by <- input$color_var
-        is_valid_color <- !is.null(color_by) && color_by != "" && 
-                          color_by %in% names(mc_tidy) && color_by != "ligand"
-        
-        is_color_numeric <- FALSE
-        if (is_valid_color) {
-          is_color_numeric <- is.numeric(mc_tidy[[color_by]])
-        }
-        
-        p <- ggplot()
-        
-        if (has_ref) {
-          p <- p +
-            geom_path(
-              data = filter(mc_tidy, ligand == ref_ligand_val),
-              aes(temperature, fluorescence, group = well),
-              color = 'grey50',
-              show.legend = TRUE
-            )
-        }
-        
-        if (is_valid_color) {
-          filter_data <- if (has_ref) filter(mc_tidy, ligand != ref_ligand_val) else mc_tidy
-          p <- p +
-            geom_path(
-              data = filter_data,
-              aes(temperature, fluorescence, group = well,
-                  color = .data[[color_by]]),
-              show.legend = TRUE
-            )
-          if (is_color_numeric) {
-            p <- p + scale_color_viridis_c(option = 'C', na.value = 'darkred')
-          } else {
-            p <- p + scale_color_viridis_d(option = 'C', na.value = 'darkred')
-          }
-        } else {
-          filter_data <- if (has_ref) filter(mc_tidy, ligand != ref_ligand_val) else mc_tidy
-          p <- p +
-            geom_path(
-              data = filter_data,
-              aes(temperature, fluorescence, group = well),
-              color = 'darkred',
-              show.legend = TRUE
-            )
-        }
-        
-        if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-          p <- p + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                              ncol = 6)
-        }
-        
-        p <- p + theme_bw() + 
-          theme(legend.position = 'top')
-        
-        incProgress(0.7, detail = "Finalizing...")
-        
-        print(p)
-      })
+      list(input$color_var, input$facet_vars, input$facet_ncol, input$plot_width, input$plot_height)
+      
+      build_curve_plot(data()$mc_tidy, rv$ref_ligand_val, 
+                        input$color_var, input$facet_vars, ncol = input$facet_ncol)
     })
     
     # =========================================================================
@@ -493,90 +555,14 @@ dsfServer <- function(id) {
     output$plot_deri <- renderPlot({
       req(data())
       
-      withProgress(message = 'Rendering plot...', value = 0, {
-        incProgress(0.2, detail = "Preparing data...")
-        
-        mc_tidy <- data()$mc_tidy
-        
-        ref_ligand_val <- rv$ref_ligand_val
-        has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && ref_ligand_val %in% mc_tidy$ligand
-        
-        color_by <- input$color_var
-        is_valid_color <- !is.null(color_by) && color_by != "" && 
-                          color_by %in% names(mc_tidy) && color_by != "ligand"
-        
-        is_color_numeric <- FALSE
-        if (is_valid_color) {
-          is_color_numeric <- is.numeric(mc_tidy[[color_by]])
-        }
-        
-        incProgress(0.3, detail = "Computing derivatives...")
-        
-        deri <- mc_tidy %>%
-          nest(.by = c(plate, target, ligand, well)) %>%
-          mutate(pred = purrr::map(data, \(d) {
-            tryCatch({
-              mod <- mgcv::gam(fluorescence ~ s(temperature), data = d)
-              res <- gratia::derivatives(mod, n = 100, order = 1)
-              tibble(temperature = res$temperature,
-                     derivative = res$.derivative)
-            }, error = function(e) NULL)
-          })) %>%
-          unnest(pred) %>%
-          filter(!is.na(derivative))
-        
-        incProgress(0.3, detail = "Plotting...")
-        
-        p <- ggplot()
-        
-        if (has_ref) {
-          p <- p +
-            geom_line(
-              data = filter(deri, ligand == ref_ligand_val),
-              aes(temperature, derivative, group = well),
-              color = 'grey50',
-              show.legend = TRUE
-            )
-        }
-        
-        if (is_valid_color) {
-          filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-          p <- p +
-            geom_line(
-              data = filter_data,
-              aes(temperature, derivative, group = well,
-                  color = .data[[color_by]]),
-              show.legend = TRUE
-            )
-          if (is_color_numeric) {
-            p <- p + scale_color_viridis_c(option = 'C', na.value = 'darkred')
-          } else {
-            p <- p + scale_color_viridis_d(option = 'C', na.value = 'darkred')
-          }
-        } else {
-          filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-          p <- p +
-            geom_line(
-              data = filter_data,
-              aes(temperature, derivative, group = well),
-              color = 'darkred',
-              show.legend = TRUE
-            )
-        }
-        
-        if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-          p <- p + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                              ncol = 6)
-        }
-        
-        p <- p + coord_cartesian(xlim = c(25, 55)) +
-          theme_bw() +
-          theme(legend.position = 'top')
-        
-        incProgress(0.2, detail = "Finalizing...")
-        
-        print(p)
-      })
+      list(input$color_var, input$facet_vars, input$facet_ncol, input$plot_width, input$plot_height)
+      
+      deri <- data()$derivatives
+      validate(need(nrow(deri) > 0, "No derivatives could be computed"))
+      
+      build_curve_plot(deri, rv$ref_ligand_val, 
+                        input$color_var, input$facet_vars, 
+                        is_derivative = TRUE, x_limits = c(25, 55), ncol = input$facet_ncol)
     })
     
     # =========================================================================
@@ -584,180 +570,72 @@ dsfServer <- function(id) {
     # =========================================================================
     output$ligand_selector <- renderUI({
       req(data())
-      info <- data()$info
       selectInput(ns("selected_ligand"), "Select Ligand", 
-                  choices = unique(info$ligand), 
-                  selected = unique(info$ligand)[1])
+                  choices = data()$ligand_choices, 
+                  selected = data()$ligand_choices[1])
     })
     
     output$plot_ligand_detail <- renderPlot({
-      req(data())
-      req(input$selected_ligand)
+      req(data(), input$selected_ligand)
       
-      withProgress(message = 'Rendering plot...', value = 0, {
-        incProgress(0.2, detail = "Preparing data...")
-        
-        mc_tidy <- data()$mc_tidy
-        info <- data()$info
-        
-        roi <- input$selected_ligand
-        ref_ligand_val <- rv$ref_ligand_val
-        has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && ref_ligand_val %in% mc_tidy$ligand
-        
-        if (has_ref) {
-          df_sub <- mc_tidy %>%
-            filter(ligand %in% c(ref_ligand_val, roi))
-        } else {
-          df_sub <- mc_tidy %>%
-            filter(ligand == roi)
-        }
-        
-        multi_plate <- n_distinct(df_sub$plate) > 1
-        facet_vars <- if (multi_plate) vars(target, plate) else vars(target)
-        
-        color_by_used <- input$color_var
-        is_valid_color <- !is.null(color_by_used) && color_by_used != "" && 
-                          color_by_used %in% names(df_sub) && color_by_used != "ligand"
-        
-        is_color_numeric <- FALSE
-        if (is_valid_color) {
-          is_color_numeric <- is.numeric(df_sub[[color_by_used]])
-        }
-        
-        incProgress(0.3, detail = "Plotting raw curves...")
-        
-        # Raw curve
-        p1 <- ggplot()
-        
-        if (has_ref) {
-          p1 <- p1 +
-            geom_path(
-              data = filter(df_sub, ligand == ref_ligand_val),
-              aes(temperature, fluorescence, group = well),
-              color = 'grey50',
-              show.legend = TRUE
-            )
-        }
-        
-        if (is_valid_color) {
-          filter_data <- if (has_ref) filter(df_sub, ligand != ref_ligand_val) else df_sub
-          p1 <- p1 +
-            geom_path(
-              data = filter_data,
-              aes(temperature, fluorescence, group = well,
-                  color = .data[[color_by_used]]),
-              show.legend = TRUE
-            ) +
-            (if (is_color_numeric) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-             else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-        } else {
-          filter_data <- if (has_ref) filter(df_sub, ligand != ref_ligand_val) else df_sub
-          p1 <- p1 +
-            geom_path(
-              data = filter_data,
-              aes(temperature, fluorescence, group = well),
-              color = 'darkred',
-              show.legend = TRUE
-            )
-        }
-        
-        p1 <- p1 +
-          guides(color = guide_legend('')) +
-          facet_wrap(facet_vars, ncol = 6) +
-          labs(title = roi) +
-          theme_bw() +
-          theme(
-            legend.position = 'top',
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank()
-          )
-        
-        incProgress(0.3, detail = "Plotting derivative curves...")
-        
-        # Derivative curve
-        deri <- df_sub %>%
-          nest(.by = c(plate, target, ligand, well)) %>%
-          mutate(pred = purrr::map(data, \(d) {
-            tryCatch({
-              mod <- mgcv::gam(fluorescence ~ s(temperature), data = d)
-              res <- gratia::derivatives(mod, n = 100, order = 1)
-              tibble(temperature = res$temperature,
-                     derivative = res$.derivative)
-            }, error = function(e) NULL)
-          })) %>%
-          unnest(pred)
-        
-        p2 <- ggplot()
-        
-        if (has_ref) {
-          p2 <- p2 +
-            geom_line(
-              data = filter(deri, ligand == ref_ligand_val),
-              aes(temperature, derivative, group = well),
-              color = 'grey50',
-              show.legend = TRUE
-            )
-        }
-        
-        if (is_valid_color) {
-          filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-          p2 <- p2 +
-            geom_line(
-              data = filter_data,
-              aes(temperature, derivative, group = well,
-                  color = .data[[color_by_used]]),
-              show.legend = TRUE
-            ) +
-            (if (is_color_numeric) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-             else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-        } else {
-          filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-          p2 <- p2 +
-            geom_line(
-              data = filter_data,
-              aes(temperature, derivative, group = well),
-              color = 'darkred',
-              show.legend = TRUE
-            )
-        }
-        
-        p2 <- p2 +
-          facet_wrap(facet_vars, ncol = 6) +
-          coord_cartesian(xlim = c(25, 55)) +
-          labs(title = roi) +
-          theme_bw() +
-          theme(
-            legend.position = 'none',
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank()
-          )
-        
-        incProgress(0.2, detail = "Finalizing...")
-        
-        # Chemical structure
-        if (roi %in% info$ligand && 'smiles' %in% colnames(info)) {
-          try_res <- try({
-            mol <- info %>%
-              filter(ligand == roi) %>%
-              pull(smiles) %>%
-              unique() %>%
-              rcdk::parse.smiles() %>%
-              .[[1]]
-            grob <- grid::rasterGrob(view.image.2d(mol))
-            p3 <- ggplot() +
-              annotation_custom(grob) +
-              labs(title = roi) +
-              theme_void()
-            print(p1 + p2 + p3 + plot_layout(widths = c(1, 1, 0.2)))
-          }, silent = TRUE)
-          
-          if (inherits(try_res, "try-error")) {
-            print(p1 + p2 + plot_spacer() + plot_layout(widths = c(1, 1, 0.2)))
-          }
-        } else {
+      list(input$color_var, input$facet_ncol, input$plot_width, input$plot_height)
+      
+      roi <- input$selected_ligand
+      ref_ligand_val <- rv$ref_ligand_val
+      has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && 
+                 ref_ligand_val %in% data()$mc_tidy$ligand
+      
+      # Subset raw data
+      if (has_ref) {
+        df_sub <- data()$mc_tidy %>%
+          filter(ligand %in% c(ref_ligand_val, roi))
+        deri_sub <- data()$derivatives %>%
+          filter(ligand %in% c(ref_ligand_val, roi))
+      } else {
+        df_sub <- data()$mc_tidy %>%
+          filter(ligand == roi)
+        deri_sub <- data()$derivatives %>%
+          filter(ligand == roi)
+      }
+      
+      multi_plate <- n_distinct(df_sub$plate) > 1
+      facet_vars <- if (multi_plate) vars(target, plate) else vars(target)
+      
+      p1 <- build_curve_plot(df_sub, ref_ligand_val,
+                             input$color_var, NULL) +
+        facet_wrap(facet_vars, ncol = input$facet_ncol) +
+        labs(title = roi) +
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank())
+      suppressMessages(p1 <- p1 + guides(color = guide_legend('')))
+      
+      p2 <- build_curve_plot(deri_sub, ref_ligand_val,
+                             input$color_var, NULL,
+                             is_derivative = TRUE, x_limits = c(25, 55)) +
+        facet_wrap(facet_vars, ncol = input$facet_ncol) +
+        labs(title = roi) +
+        theme(legend.position = 'none',
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank())
+      
+      # Chemical structure (if SMILES available)
+      meta <- data()$meta
+      if (roi %in% meta$ligand && 'smiles' %in% colnames(meta) && requireNamespace("rcdk", quietly = TRUE)) {
+        tryCatch({
+          mol <- meta %>%
+            filter(ligand == roi) %>%
+            pull(smiles) %>% unique() %>%
+            rcdk::parse.smiles() %>% .[[1]]
+          grob <- grid::rasterGrob(view.image.2d(mol))
+          p3 <- ggplot() + annotation_custom(grob) +
+            labs(title = roi) + theme_void()
+          print(p1 + p2 + p3 + plot_layout(widths = c(1, 1, 0.2)))
+        }, error = function(e) {
           print(p1 + p2 + plot_spacer() + plot_layout(widths = c(1, 1, 0.2)))
-        }
-      })
+        })
+      } else {
+        print(p1 + p2 + plot_spacer() + plot_layout(widths = c(1, 1, 0.2)))
+      }
     })
     
     # =========================================================================
@@ -780,7 +658,9 @@ dsfServer <- function(id) {
         writexl::write_xlsx(list(
           "Merged Data" = df_with_dtm(),
           "Wide Format" = df_wide(),
-          "Metadata" = data()$info
+          "Metadata" = data()$meta,
+          "Raw Fluorescence" = data()$mc_tidy,
+          "1st Derivative" = data()$derivatives
         ), file)
       }
     )
@@ -795,303 +675,93 @@ dsfServer <- function(id) {
       content = function(file) {
         req(data())
         
-        # Create temporary directory
         plot_dir <- tempfile(pattern = "dsf_plots_")
         dir.create(plot_dir, recursive = TRUE)
         
         tryCatch({
           df <- df_with_dtm()
           mc_tidy <- data()$mc_tidy
-          info <- data()$info
+          deri <- data()$derivatives
+          meta <- data()$meta
           ref_ligand_val <- rv$ref_ligand_val
-          has_ref <- !is.null(ref_ligand_val) && ref_ligand_val != "" && ref_ligand_val %in% mc_tidy$ligand
+          color_col <- input$color_var
+          facet_vars <- input$facet_vars
           
           withProgress(message = 'Generating plots...', value = 0, {
             
             incProgress(0.15, detail = "TM plot...")
-            # TM plot
-            color_col <- input$color_var
-            use_color <- color_col != "" && color_col %in% names(df)
-            
             p_tm <- df %>%
-              mutate(tm = ifelse(tm > 100, 100, ifelse(tm < 0, 0, tm)))
-            
-            if (use_color) {
-              p_tm <- p_tm %>%
-                ggplot(aes(x = ligand, y = tm, color = .data[[color_col]])) +
-                geom_point(show.legend = TRUE)
-            } else {
-              p_tm <- p_tm %>%
-                ggplot(aes(x = ligand, y = tm)) +
-                geom_point(show.legend = FALSE)
-            }
-            
-            if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-              p_tm <- p_tm + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                                         scales = "fixed")
-            }
-            
-            p_tm <- p_tm + theme_bw() + 
-              theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-            
+              mutate(tm = ifelse(tm > 100, 100, ifelse(tm < 0, 0, tm))) %>%
+              {build_scatter_plot(., "ligand", "tm", color_col, facet_vars, ncol = input$facet_ncol)}
             ggsave(file.path(plot_dir, 'TM_scatter.pdf'), p_tm, 
                    width = input$plot_width, height = input$plot_height)
             
             incProgress(0.15, detail = "Delta TM plot...")
-            # Delta TM plot
             if (rv$has_ref_ligand) {
               p_dtm <- df %>%
-                mutate(d_tm = ifelse(d_tm > 10, 10, ifelse(d_tm < -10, -10, d_tm)))
-              
-              if (use_color) {
-                p_dtm <- p_dtm %>%
-                  ggplot(aes(x = ligand, y = d_tm, color = .data[[color_col]])) +
-                  geom_point(show.legend = TRUE)
-              } else {
-                p_dtm <- p_dtm %>%
-                  ggplot(aes(x = ligand, y = d_tm)) +
-                  geom_point(show.legend = FALSE)
-              }
-              
-              p_dtm <- p_dtm + geom_hline(yintercept = 0, linetype = "dashed", color = "gray50")
-              
-              if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-                p_dtm <- p_dtm + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                                            scales = "fixed")
-              }
-              
-              p_dtm <- p_dtm + theme_bw() + 
-                theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-              
+                mutate(d_tm = ifelse(d_tm > 10, 10, ifelse(d_tm < -10, -10, d_tm))) %>%
+                {build_scatter_plot(., "ligand", "d_tm", color_col, facet_vars, 
+                                     hline_y = 0, ncol = input$facet_ncol)}
               ggsave(file.path(plot_dir, 'Delta_TM_scatter.pdf'), p_dtm, 
                      width = input$plot_width, height = input$plot_height)
             }
             
             incProgress(0.15, detail = "Raw curves...")
-            # Raw curves
-            is_valid_color_raw <- !is.null(color_col) && color_col != "" && 
-                                  color_col %in% names(mc_tidy) && color_col != "ligand"
-            is_color_numeric_raw <- if(is_valid_color_raw) is.numeric(mc_tidy[[color_col]]) else FALSE
-            
-            p_raw <- ggplot()
-            
-            if (has_ref) {
-              p_raw <- p_raw +
-                geom_path(data = filter(mc_tidy, ligand == ref_ligand_val),
-                          aes(temperature, fluorescence, group = well), color = 'grey50')
-            }
-            
-            if (is_valid_color_raw) {
-              filter_data <- if (has_ref) filter(mc_tidy, ligand != ref_ligand_val) else mc_tidy
-              p_raw <- p_raw + geom_path(data = filter_data,
-                                         aes(temperature, fluorescence, group = well, color = .data[[color_col]])) +
-                (if(is_color_numeric_raw) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-                 else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-            } else {
-              filter_data <- if (has_ref) filter(mc_tidy, ligand != ref_ligand_val) else mc_tidy
-              p_raw <- p_raw + geom_path(data = filter_data,
-                                         aes(temperature, fluorescence, group = well), color = 'darkred')
-            }
-            
-            if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-              p_raw <- p_raw + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                                          ncol = 6)
-            }
-            
-            p_raw <- p_raw + theme_bw() + theme(legend.position = 'top')
-            
+            p_raw <- build_curve_plot(mc_tidy, ref_ligand_val, color_col, facet_vars, ncol = input$facet_ncol)
             ggsave(file.path(plot_dir, 'Raw_curves.pdf'), p_raw, 
                    width = input$plot_width, height = input$plot_height)
             
             incProgress(0.15, detail = "Derivative curves...")
-            # Derivative curves
-            deri <- mc_tidy %>%
-              nest(.by = c(plate, target, ligand, well)) %>%
-              mutate(pred = purrr::map(data, \(d) {
-                tryCatch({
-                  mod <- mgcv::gam(fluorescence ~ s(temperature), data = d)
-                  res <- gratia::derivatives(mod, n = 100, order = 1)
-                  tibble(temperature = res$temperature, derivative = res$.derivative)
-                }, error = function(e) NULL)
-              })) %>%
-              unnest(pred) %>%
-              filter(!is.na(derivative))
-            
-            is_valid_color_deri <- !is.null(color_col) && color_col != "" && 
-                                   color_col %in% names(deri) && color_col != "ligand"
-            is_color_numeric_deri <- if(is_valid_color_deri) is.numeric(deri[[color_col]]) else FALSE
-            
-            p_deri <- ggplot()
-            
-            if (has_ref) {
-              p_deri <- p_deri +
-                geom_line(data = filter(deri, ligand == ref_ligand_val),
-                          aes(temperature, derivative, group = well), color = 'grey50')
+            if (nrow(deri) > 0) {
+              p_deri <- build_curve_plot(deri, ref_ligand_val, color_col, facet_vars,
+                                          is_derivative = TRUE, x_limits = c(25, 55), ncol = input$facet_ncol)
+              ggsave(file.path(plot_dir, 'Derivative_curves.pdf'), p_deri, 
+                     width = input$plot_width, height = input$plot_height)
             }
-            
-            if (is_valid_color_deri) {
-              filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-              p_deri <- p_deri + geom_line(data = filter_data,
-                                           aes(temperature, derivative, group = well, color = .data[[color_col]])) +
-                (if(is_color_numeric_deri) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-                 else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-            } else {
-              filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-              p_deri <- p_deri + geom_line(data = filter_data,
-                                           aes(temperature, derivative, group = well), color = 'darkred')
-            }
-            
-            if (length(input$facet_vars) > 0 && !all(input$facet_vars == "")) {
-              p_deri <- p_deri + facet_wrap(as.formula(paste("~", paste(input$facet_vars, collapse = " + "))), 
-                                            ncol = 6)
-            }
-            
-            p_deri <- p_deri + coord_cartesian(xlim = c(25, 55)) +
-              theme_bw() + theme(legend.position = 'top')
-            
-            ggsave(file.path(plot_dir, 'Derivative_curves.pdf'), p_deri, 
-                   width = input$plot_width, height = input$plot_height)
             
             incProgress(0.2, detail = "Ligand details...")
-            # Individual ligand plots
-            rois <- unique(info$ligand)
-            
+            rois <- unique(meta$ligand)
             for (roi in rois[1:min(20, length(rois))]) {
-              if (has_ref) {
-                df_sub <- mc_tidy %>%
-                  filter(ligand %in% c(ref_ligand_val, roi))
+              if (!is.null(ref_ligand_val) && ref_ligand_val != "" && ref_ligand_val %in% mc_tidy$ligand) {
+                df_sub <- mc_tidy %>% filter(ligand %in% c(ref_ligand_val, roi))
+                deri_sub <- deri %>% filter(ligand %in% c(ref_ligand_val, roi))
               } else {
-                df_sub <- mc_tidy %>%
-                  filter(ligand == roi)
+                df_sub <- mc_tidy %>% filter(ligand == roi)
+                deri_sub <- deri %>% filter(ligand == roi)
               }
               
               multi_plate <- n_distinct(df_sub$plate) > 1
-              facet_vars <- if (multi_plate) vars(target, plate) else vars(target)
+              fvars <- if (multi_plate) vars(target, plate) else vars(target)
               
-              color_by_used <- input$color_var
-              is_valid_color <- !is.null(color_by_used) && color_by_used != "" && 
-                                color_by_used %in% names(df_sub) && color_by_used != "ligand"
-              
-              is_color_numeric <- FALSE
-              if (is_valid_color) {
-                is_color_numeric <- is.numeric(df_sub[[color_by_used]])
-              }
-              
-              p1 <- ggplot()
-              
-              if (has_ref) {
-                p1 <- p1 +
-                  geom_path(
-                    data = filter(df_sub, ligand == ref_ligand_val),
-                    aes(temperature, fluorescence, group = well),
-                    color = 'grey50'
-                  )
-              }
-              
-              if (is_valid_color) {
-                filter_data <- if (has_ref) filter(df_sub, ligand != ref_ligand_val) else df_sub
-                p1 <- p1 +
-                  geom_path(
-                    data = filter_data,
-                    aes(temperature, fluorescence, group = well,
-                        color = .data[[color_by_used]])
-                  ) +
-                  (if (is_color_numeric) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-                   else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-              } else {
-                filter_data <- if (has_ref) filter(df_sub, ligand != ref_ligand_val) else df_sub
-                p1 <- p1 +
-                  geom_path(
-                    data = filter_data,
-                    aes(temperature, fluorescence, group = well),
-                    color = 'darkred'
-                  )
-              }
-              
-              p1 <- p1 +
-                guides(color = guide_legend('')) +
-                facet_wrap(facet_vars, ncol = 6) +
+              p1 <- build_curve_plot(df_sub, ref_ligand_val, color_col, NULL) +
+                facet_wrap(fvars, ncol = input$facet_ncol) +
                 labs(title = roi) +
-                theme_bw() +
-                theme(legend.position = 'top',
-                      panel.grid.major = element_blank(),
+                theme(panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank())
+              suppressMessages(p1 <- p1 + guides(color = guide_legend('')))
               
-              deri <- df_sub %>%
-                nest(.by = c(plate, target, ligand, well)) %>%
-                mutate(pred = purrr::map(data, \(d) {
-                  tryCatch({
-                    mod <- mgcv::gam(fluorescence ~ s(temperature), data = d)
-                    res <- gratia::derivatives(mod, n = 100, order = 1)
-                    tibble(temperature = res$temperature,
-                           derivative = res$.derivative)
-                  }, error = function(e) NULL)
-                })) %>%
-                unnest(pred)
-              
-              p2 <- ggplot()
-              
-              if (has_ref) {
-                p2 <- p2 +
-                  geom_line(
-                    data = filter(deri, ligand == ref_ligand_val),
-                    aes(temperature, derivative, group = well),
-                    color = 'grey50'
-                  )
-              }
-              
-              if (is_valid_color) {
-                filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-                p2 <- p2 +
-                  geom_line(
-                    data = filter_data,
-                    aes(temperature, derivative, group = well,
-                        color = .data[[color_by_used]])
-                  ) +
-                  (if (is_color_numeric) scale_color_viridis_c(option = 'C', na.value = 'darkred')
-                   else scale_color_viridis_d(option = 'C', na.value = 'darkred'))
-              } else {
-                filter_data <- if (has_ref) filter(deri, ligand != ref_ligand_val) else deri
-                p2 <- p2 +
-                  geom_line(
-                    data = filter_data,
-                    aes(temperature, derivative, group = well),
-                    color = 'darkred'
-                  )
-              }
-              
-              p2 <- p2 +
-                facet_wrap(facet_vars, ncol = 6) +
-                coord_cartesian(xlim = c(25, 55)) +
+              p2 <- build_curve_plot(deri_sub, ref_ligand_val, color_col, NULL,
+                                      is_derivative = TRUE, x_limits = c(25, 55)) +
+                facet_wrap(fvars, ncol = input$facet_ncol) +
                 labs(title = roi) +
-                theme_bw() +
                 theme(legend.position = 'none',
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank())
               
-              if (roi %in% info$ligand && 'smiles' %in% colnames(info)) {
-                try_res <- try({
-                  mol <- info %>%
-                    filter(ligand == roi) %>%
-                    pull(smiles) %>%
-                    unique() %>%
-                    rcdk::parse.smiles() %>%
-                    .[[1]]
+              if (roi %in% meta$ligand && 'smiles' %in% colnames(meta) && requireNamespace("rcdk", quietly = TRUE)) {
+                tryCatch({
+                  mol <- meta %>% filter(ligand == roi) %>% pull(smiles) %>% unique() %>%
+                    rcdk::parse.smiles() %>% .[[1]]
                   grob <- grid::rasterGrob(view.image.2d(mol))
-                  p3 <- ggplot() +
-                    annotation_custom(grob) +
-                    labs(title = roi) +
-                    theme_void()
+                  p3 <- ggplot() + annotation_custom(grob) + labs(title = roi) + theme_void()
                   pdf(file.path(plot_dir, str_glue('ligand_{roi}.pdf')), width = 15, height = 4)
                   print(p1 + p2 + p3 + plot_layout(widths = c(1, 1, 0.2)))
                   dev.off()
-                }, silent = TRUE)
-                
-                if (inherits(try_res, "try-error")) {
+                }, error = function(e) {
                   pdf(file.path(plot_dir, str_glue('ligand_{roi}.pdf')), width = 15, height = 4)
                   print(p1 + p2 + plot_spacer() + plot_layout(widths = c(1, 1, 0.2)))
                   dev.off()
-                }
+                })
               } else {
                 pdf(file.path(plot_dir, str_glue('ligand_{roi}.pdf')), width = 15, height = 4)
                 print(p1 + p2 + plot_spacer() + plot_layout(widths = c(1, 1, 0.2)))
@@ -1100,8 +770,6 @@ dsfServer <- function(id) {
             }
             
             incProgress(0.1, detail = "Creating zip...")
-            
-            # Get PDF files
             pdf_files <- list.files(plot_dir, pattern = "\\.pdf$", full.names = FALSE)
             
             if (length(pdf_files) == 0) {
@@ -1109,11 +777,9 @@ dsfServer <- function(id) {
               return(NULL)
             }
             
-            # Create zip
             old_wd <- getwd()
             setwd(plot_dir)
             on.exit(setwd(old_wd), add = TRUE)
-            
             zip::zip(zipfile = file, files = pdf_files)
           })
           
