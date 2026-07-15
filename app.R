@@ -10,8 +10,10 @@ library(tidyverse)
 source("R/utils.R")
 source("R/mod_rtpcr.R")
 source("R/mod_shrna.R")
+source("R/mod_sgrna.R")
 source("R/mod_synergy.R")
 source("R/mod_dsf.R")
+
 
 options(shiny.maxRequestSize=100*1024^2)
 
@@ -32,7 +34,7 @@ ui <- dashboardPage(
     tabItems(
       tabItem(tabName = "rtpcr", rtPCRUI("rtPCR")),
       tabItem(tabName = "shrna", shRNAUI("shRNA")),
-      tabItem(tabName = "sgrna", h4("Coming soon...")),
+      tabItem(tabName = "sgrna", sgRNAUI("sgrna")),
       tabItem(tabName = "synergy", synergyUI("synergy")),
       tabItem(tabName = "dsf", dsfUI("dsf"))
     )
@@ -45,6 +47,7 @@ server <- function(input, output, session) {
   shRNAServer("shRNA")
   synergyServer("synergy")
   dsfServer("dsf")
+  sgRNAServer("sgrna")
 }
 
 
