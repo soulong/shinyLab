@@ -16,10 +16,10 @@ rtPCRUI <- function(id) {
                    choices=c('ct','d_ct','dd_ct','dd_ct_2n','dd_ct_2n_norm'), 
                    selected='dd_ct_2n_norm'),
       hr(),
-      actionButton(ns("apply"), "Analyze", icon=icon("play"), class="btn-primary"),
+      actionButton(ns("apply"), "Analyze", icon=icon("play"), class="btn-default"),
       downloadButton(ns("download_data"), "Download")
     ),
-    box(title="Results", width=9, status="primary",
+    box(title="Results", width=9, status="primary", solidHeader=TRUE,
       tabsetPanel(
         tabPanel("Facet Plot",
           fluidRow(
@@ -117,10 +117,11 @@ new_path <- paste0(input$userfile$datapath, ".xlsx")
       ct_filtered <- rv$ct %>%
         dplyr::filter(sample %in% input$sample, target %in% input$target)
       # deal with NA
+      ct_filtered <- ct_filtered %>% 
+        mutate(mean=mean(ct, na.rm=T), .by=c(sample, target))
       if (isTRUE(input$na.do)) {
         ct_filtered <- ct_filtered %>% 
-          mutate(mean=mean(ct, na.rm=T), .by=c(sample, target)) %>% 
-          mutate(ct=ifelse(is.na(ct), rnorm(1, mean, sd=0.5), ct))
+          mutate(ct=ifelse(is.na(ct), rnorm(n(), mean, sd=0.5), ct))
       }
       
       # calculate dCT

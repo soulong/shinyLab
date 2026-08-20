@@ -164,21 +164,21 @@ shRNAUI <- function(id) {
                     placeholder = "One gene per line", height = "150px"),
       hr(),
       actionButton(ns("submit"), "Convert IDs", icon = icon("sync"),
-                   class = "btn-info"),
+                   class = "btn-default"),
       br(), br(),
       actionButton(ns("design"), "Design Primers", icon = icon("magic"),
-                   class = "btn-success"),
+                   class = "btn-default"),
       br(), br(),
       downloadButton(ns("download"), "Download")
     ),
     column(9,
-      box(title = "Converted Gene IDs", width = 12, collapsible = TRUE,
+      box(title = "Converted Gene IDs", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
         tableOutput(ns("gene_table"))
       ),
-      box(title = "shRNA Antisense Sequences", width = 12, collapsible = TRUE,
+      box(title = "shRNA Antisense Sequences", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
         tableOutput(ns("antisense_table"))
       ),
-      box(title = "Designed Primers", width = 12, collapsible = TRUE,
+      box(title = "Designed Primers", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
         tableOutput(ns("primer_table"))
       )
     )

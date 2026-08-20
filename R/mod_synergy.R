@@ -23,11 +23,11 @@ synergyUI <- function(id) {
                    choices = c("viability", "inhibition"), 
                    selected = "viability", inline = FALSE),
       hr(),
-      actionButton(ns("submit"), "Submit", icon = icon("play"), class = "btn-primary"),
+      actionButton(ns("submit"), "Submit", icon = icon("play"), class = "btn-default"),
       br(), br(),
       downloadButton(ns("download"), "Download", icon = icon("file-download"))
     ),
-    box(title = "Results", width = 9, status = "primary",
+    box(title = "Results", width = 9, status = "primary", solidHeader = TRUE,
       tabsetPanel(
         tabPanel("Output",
           verbatimTextOutput(ns("res_show"))

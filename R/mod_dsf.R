@@ -108,6 +108,11 @@ build_curve_plot <- function(data, ref_ligand_val, color_by, facet_vars,
 
 
 compute_derivatives <- function(mc_tidy) {
+  if (nrow(mc_tidy) == 0) {
+    return(tibble(plate = character(), target = character(),
+                  ligand = character(), well = character(),
+                  temperature = numeric(), derivative = numeric()))
+  }
   mc_tidy %>%
     filter(!is.na(ligand), !is.na(target)) %>%
     nest(.by = c(plate, target, ligand, well)) %>%
@@ -119,8 +124,39 @@ compute_derivatives <- function(mc_tidy) {
                derivative = res$.derivative)
       }, error = function(e) NULL)
     })) %>%
-    unnest(pred) %>%
+    unnest(pred, keep_empty = TRUE) %>%
+    dplyr::select(!any_of(c("data", "pred"))) %>%
+    { if (!"derivative" %in% colnames(.)) mutate(., derivative = NA_real_) else . } %>%
     filter(!is.na(derivative))
+}
+
+
+# -----------------------------------------------------------------------------
+# Analysis Results Reader
+# -----------------------------------------------------------------------------
+# QuantStudio DSF exports append a second "Hits" summary table below the main
+# per-well results table, which causes fread() to abort when the trailing
+# table has fewer columns. Read only the first (main) table block.
+read_analysis_results <- function(file) {
+  lines <- readLines(file, warn = FALSE)
+  hdr <- grep("^#[\t ]", lines)
+  if (length(hdr) < 1) return(NULL)
+  first <- hdr[1]
+  last <- if (length(hdr) > 1) hdr[2] - 1 else length(lines)
+  data.table::fread(text = paste(lines[first:last], collapse = "\n"),
+                    data.table = FALSE) |> tibble::as_tibble()
+}
+
+# RawData exports append a second "Derivative" table below the fluorescence
+# data. Read only the fluorescence table.
+read_fluorescence_table <- function(file) {
+  lines <- readLines(file, warn = FALSE)
+  hdr <- grep("^Well\tWell Position\tReading\tTemperature\tFluorescence", lines)
+  if (length(hdr) < 1) return(NULL)
+  next_hdr <- grep("^Well\tWell Position\tReading\tTemperature\tDerivative", lines)
+  last <- if (length(next_hdr) > 0) next_hdr[1] - 1 else length(lines)
+  data.table::fread(text = paste(lines[hdr[1]:last], collapse = "\n"),
+                    data.table = FALSE) |> tibble::as_tibble()
 }
 
 # =============================================================================
@@ -131,20 +167,23 @@ dsfUI <- function(id) {
   ns <- NS(id)
   fluidRow(
     column(width = 3,
-      box(title = "File Upload", width = 12, status = "primary", solidHeader = TRUE,
+      box(title = "File Upload", width = NULL, status = "primary", solidHeader = TRUE,
         fileInput(ns("file_analysis"), "Analysis Data Files (multiple)", 
                   accept = c(".txt", ".tsv"), multiple = TRUE),
-        checkboxInput(ns("use_custom_metadata"), "Use custom metadata file", value = TRUE),
+        helpText("Upload the QuantStudio DSF export files: the '...AnalysisResults.txt' file plus every '...RawData_<plate>.eds.txt' file. Plate names in the results must match the RawData file names."),
+        checkboxInput(ns("use_custom_metadata"), "Use custom metadata file", value = FALSE),
         conditionalPanel(
           condition = "input.use_custom_metadata == true",
           ns = ns,
-          fileInput(ns("file_metadata"), "Plate meta (.xlsx)", accept = ".xlsx")
+          fileInput(ns("file_metadata"), "Plate meta (.xlsx)", accept = ".xlsx"),
+          helpText("Optional. Name the file like its raw-data file (e.g. '...RawData_<plate>.eds.xlsx' for '...RawData_<plate>.eds.txt') so annotations are assigned to the correct plate (preferred for multi-plate). Or name it like the analysis-results file for a single plate. If it can't be matched by name, annotations are applied to all wells. Each sheet name becomes a well-annotation column ('target', 'ligand' required; optionally 'conc', 'smiles'); fill each sheet with 384-well values in range B2:Y17."),
+          helpText("If no file is provided, each well is treated as its own protein/ligand combination.")
         ),
         radioButtons(ns("tm_type"), "Tm Calculation",
                      choices = c("Tm (Derivative)" = "tm_d", "Tm (Boltzmann)" = "tm_b"),
                      selected = "tm_d", inline = FALSE),
         hr(),
-        actionButton(ns("submit"), "Submit", icon = icon("play"), class = "btn-primary"),
+        actionButton(ns("submit"), "Submit", icon = icon("play"), class = "btn-default"),
         br(), br(),
         uiOutput(ns("ref_selectors")),
         hr(),
@@ -152,7 +191,7 @@ dsfUI <- function(id) {
         br(), br(),
         downloadButton(ns("download_plots"), "Download Plots", icon = icon("file-pdf"))
       ),
-      box(title = "Plot Settings", width = 12, status = "primary", solidHeader = TRUE,
+      box(title = "Plot Settings", width = NULL, status = "primary", solidHeader = TRUE,
         collapsible = TRUE,
         selectInput(ns("color_var"), "Color By", choices = "", selected = ""),
         selectInput(ns("facet_vars"), "Facet By (hold Ctrl for multiple)", 
@@ -167,28 +206,8 @@ dsfUI <- function(id) {
       )
     ),
     column(width = 9,
-      box(title = "Results", width = 12, status = "primary",
-        tabsetPanel(
-          tabPanel("Data Preview",
-            DT::dataTableOutput(ns("data_preview"))
-          ),
-          tabPanel("TM Scatter",
-            uiOutput(ns("plot_tm_wrapper"))
-          ),
-          tabPanel("Delta TM Scatter",
-            uiOutput(ns("plot_dtm_wrapper"))
-          ),
-          tabPanel("Raw Curves",
-            uiOutput(ns("plot_raw_wrapper"))
-          ),
-          tabPanel("Derivative Curves",
-            uiOutput(ns("plot_deri_wrapper"))
-          ),
-          tabPanel("Ligand Details",
-            uiOutput(ns("ligand_selector")),
-            uiOutput(ns("plot_ligand_detail_wrapper"))
-          )
-        )
+      box(title = "Results", width = NULL, status = "primary", solidHeader = TRUE,
+        uiOutput(ns("results_tabs"))
       )
     )
   )
@@ -210,6 +229,7 @@ dsfServer <- function(id) {
       meta = NULL,
       has_ref_ligand = FALSE,
       ref_ligand_val = "",
+      used_fallback = FALSE,
       error_message = NULL
     )
     
@@ -237,7 +257,7 @@ dsfServer <- function(id) {
           if(length(res_file) > 1) {
             stop("Multiple AnalysisResults files detected. Please upload only one.")
           }
-          res <- import(res_file) %>%
+          res <- read_analysis_results(res_file) %>%
             janitor::clean_names() %>% 
             janitor::remove_empty('cols') %>% 
             dplyr::rename(plate = experiment_file_name) %>%
@@ -246,31 +266,115 @@ dsfServer <- function(id) {
                    plate = str_remove(plate, "\\.eds$") )
           
           incProgress(0.2, message = "Reading metadata...")
-          # Conditionally read metadata
+          # Metadata is optional. If a custom file is provided, join it;
+          # otherwise treat each well as its own protein/ligand combination.
+          meta <- NULL
+          used_fallback <- FALSE
           if (input$use_custom_metadata) {
-            req(input$file_metadata)
-            meta_files <- input$file_metadata$datapath %>% 
-              set_names(., str_remove(input$file_metadata$name, "\\.(eds\\.)?xlsx$"))
-            meta <- meta_files %>% 
-              map(read_metadata) %>% 
-              list_rbind(., names_to="plate")
-            if(!all(c("target", "ligand") %in% colnames(meta))) {
-              stop("Custom metadata must contain 'target' and 'ligand' columns")
+            if (is.null(input$file_metadata)) {
+              showNotification("No plate metadata file provided - each well will be treated as its own protein/ligand combination", 
+                               type = "warning", duration = 8)
+              used_fallback <- TRUE
+} else {
+              meta_files <- input$file_metadata$datapath %>% 
+                set_names(., input$file_metadata$name)
+              meta <- meta_files %>% 
+                map(read_metadata) %>% 
+                list_rbind(., names_to="plate")
+              if(!all(c("target", "ligand") %in% colnames(meta))) {
+                stop("Custom metadata must contain 'target' and 'ligand' columns")
+              }
+              
+              # Align the metadata's plate name with the data plate by matching the
+              # metadata file name to the data files:
+              #   - PRIMARY:   match a raw-data file (e.g. '...RawData_<plate>.eds.xlsx'
+              #               for '...RawData_<plate>.eds.txt') -> assign that plate.
+              #   - SECONDARY: match the analysis-results file (single plate) -> assign
+              #               the unique res$plate.
+              #   - otherwise: leave plate unchanged -> the join below falls back to
+              #               a well-only match (annotations shared across all plates).
+              norm_stem <- function(nm) {
+                tolower(nm) %>%
+                  str_remove("\\.eds\\.txt$") %>% str_remove("\\.txt$") %>%
+                  str_remove("\\.eds\\.xlsx$") %>% str_remove("\\.xlsx$") %>%
+                  str_remove("\\.eds$")
+              }
+              raw_names     <- names(all_files)[str_detect(names(all_files), "\\.eds\\.txt$")]
+              analysis_name <- names(res_file)
+              raw_file_to_plate <- function(raw_name) {
+                for (p in unique(res$plate)) {
+                  if (str_detect(raw_name, fixed(p))) return(p)
+                }
+                NA_character_
+              }
+              
+              meta_target_plate <- setNames(character(length(input$file_metadata$name)),
+                                            input$file_metadata$name)
+              for (m in input$file_metadata$name) {
+                ms <- norm_stem(m)
+                hit_raw <- raw_names[str_detect(norm_stem(raw_names), fixed(ms))]
+                if (length(hit_raw) >= 1) {
+                  meta_target_plate[m] <- raw_file_to_plate(hit_raw[1])
+                } else if (norm_stem(analysis_name) == ms) {
+                  ups <- unique(res$plate)
+                  meta_target_plate[m] <- if (length(ups) == 1) ups else NA_character_
+                } else {
+                  meta_target_plate[m] <- NA_character_
+                }
+              }
+              stem_to_plate <- setNames(meta_target_plate, norm_stem(names(meta_target_plate)))
+              meta <- meta %>% mutate(
+                plate = dplyr::coalesce(unname(stem_to_plate[ norm_stem(plate) ]), plate)
+              )
+              
+              # Inform the user which matching path was used.
+              for (m in input$file_metadata$name) {
+                tp <- meta_target_plate[m]
+                if (!is.na(tp)) {
+                  showNotification(paste0("Metadata '", m, "' matched by file name and assigned to plate '", tp, "'."),
+                                   type = "message", duration = 8)
+                } else {
+                  showNotification(paste0("Metadata '", m, "' not matched by file name; ",
+                                   "annotations applied to all wells (by well only)."),
+                                   type = "warning", duration = 8)
+                }
+              }
             }
-            # inner_join: keep only (plate, well) present in BOTH res and meta
-            merged <- res %>% 
-              inner_join(meta, by = c("plate", "well"))
-            
           } else {
-            if (!all(c("target", "ligand") %in% colnames(res))) {
-              stop("AnalysisResults must contain 'target' and 'ligand' columns when not using custom metadata")
+            used_fallback <- TRUE
+          }
+          
+          if (used_fallback) {
+            # Keep all raw analysis-result columns (matching the metadata mode).
+            # Use the exported Protein/Ligand annotations when present; fall back
+            # to the well label only where a value is missing/empty, so that any
+            # partial annotation carried by the QuantStudio results export is kept.
+            merged <- res
+            if ("protein" %in% colnames(merged)) {
+              merged <- merged %>% mutate(target = if_else(is.na(protein) | trimws(protein) == "", well, protein))
+            } else {
+              merged <- merged %>% mutate(target = well)
             }
-            merged <- res %>%
-              dplyr::select(plate, well, target, ligand, tm,
-                     any_of(c("conc", "smiles")))
+            if ("ligand" %in% colnames(merged)) {
+              merged <- merged %>% mutate(ligand = if_else(is.na(ligand) | trimws(ligand) == "", well, ligand))
+            } else {
+              merged <- merged %>% mutate(ligand = well)
+            }
             meta <- merged %>%
               dplyr::select(any_of(c("plate", "well", "target", "ligand", "conc", "smiles"))) %>%
               distinct()
+          } else {
+            merged <- res %>% 
+              inner_join(meta, by = c("plate", "well"))
+            if (nrow(merged) == 0) {
+              showNotification("Metadata plate name did not match the experiment plate; matched annotations by well only.",
+                               type = "warning", duration = 8)
+              # The metadata xlsx filename rarely matches the experiment plate
+              # name, so fall back to joining annotations by well only. This
+              # applies the well-layout annotations to every plate.
+              merged <- res %>% 
+                inner_join(meta %>% select(-any_of("plate")), by = "well")
+            }
           }
 
           # Explicit filter: keep only rows with non-NA ligand and target
@@ -302,7 +406,7 @@ dsfServer <- function(id) {
           }
           
           mc <- match_mc_files %>% 
-            map(\(x) import(x)) %>%
+            map(read_fluorescence_table) %>%
             list_rbind(names_to = 'plate') %>%
             janitor::clean_names() %>%
             dplyr::select(!c(well)) %>%
@@ -321,7 +425,11 @@ dsfServer <- function(id) {
           
           # Auto-detect reference values
           ligand_choices <- sort(unique(meta$ligand))
-          ref_ligand_default <- find_best_match(ligand_choices, c("blank", "dmso", "pbs"))
+          ref_ligand_default <- if (used_fallback) {
+            ""  # per-well fallback: no meaningful blank/DMSO reference
+          } else {
+            find_best_match(ligand_choices, c("blank", "dmso", "pbs"))
+          }
           
           # Auto-compute d_tm with detected reference
           has_ref_ligand <- ref_ligand_default != "" && ref_ligand_default %in% merged$ligand
@@ -348,6 +456,7 @@ dsfServer <- function(id) {
           rv$ref_ligand_val <- ref_ligand_default
           rv$has_ref_ligand <- has_ref_ligand
           rv$cached_df_with_dtm <- merged_with_dtm
+          rv$used_fallback <- used_fallback
           
           return(list(
             merged = merged_with_dtm,
@@ -370,18 +479,80 @@ dsfServer <- function(id) {
     # =========================================================================
     output$ref_selectors <- renderUI({
       req(data())
+      if (rv$used_fallback) return(NULL)
+      choices <- data()$ligand_choices
+      sel <- if (is.null(rv$auto_ref_ligand) || rv$auto_ref_ligand == "" ||
+                 !rv$auto_ref_ligand %in% choices) "" else rv$auto_ref_ligand
       tagList(
         selectInput(ns("ref_ligand_input"), "Reference Ligand",
-                    choices = data()$ligand_choices,
-                    selected = rv$auto_ref_ligand)
+                    choices = c("(None)" = "", choices),
+                    selected = sel)
       )
+    })
+    
+    # =========================================================================
+    # Results tabs (Delta TM omitted in per-well fallback mode)
+    # =========================================================================
+    output$results_tabs <- renderUI({
+      req(data())
+      
+      if (rv$used_fallback) {
+        tabsetPanel(
+          tabPanel("Data Preview",
+            DT::dataTableOutput(ns("data_preview"))
+          ),
+          tabPanel("TM Scatter",
+            uiOutput(ns("plot_tm_wrapper"))
+          ),
+          tabPanel("Raw Curves",
+            uiOutput(ns("plot_raw_wrapper"))
+          ),
+          tabPanel("Derivative Curves",
+            uiOutput(ns("plot_deri_wrapper"))
+          ),
+          tabPanel("Ligand Details",
+            uiOutput(ns("ligand_selector")),
+            uiOutput(ns("plot_ligand_detail_wrapper"))
+          )
+        )
+      } else {
+        tabsetPanel(
+          tabPanel("Data Preview",
+            DT::dataTableOutput(ns("data_preview"))
+          ),
+          tabPanel("TM Scatter",
+            uiOutput(ns("plot_tm_wrapper"))
+          ),
+          tabPanel("Delta TM Scatter",
+            uiOutput(ns("plot_dtm_wrapper"))
+          ),
+          tabPanel("Raw Curves",
+            uiOutput(ns("plot_raw_wrapper"))
+          ),
+          tabPanel("Derivative Curves",
+            uiOutput(ns("plot_deri_wrapper"))
+          ),
+          tabPanel("Ligand Details",
+            uiOutput(ns("ligand_selector")),
+            uiOutput(ns("plot_ligand_detail_wrapper"))
+          )
+        )
+      }
     })
     
     # =========================================================================
     # Calculate d_tm reactively when ref changes
     # =========================================================================
     df_with_dtm <- reactive({
-      req(data(), input$ref_ligand_input)
+      req(data())
+      
+      if (rv$used_fallback) {
+        rv$has_ref_ligand <- FALSE
+        rv$ref_ligand_val <- ""
+        return(data()$merged %>% dplyr::select(!any_of("d_tm")))
+      }
+      
+      req(input$ref_ligand_input)
       
       merged <- data()$merged
       ref_ligand_val <- input$ref_ligand_input
@@ -425,13 +596,13 @@ dsfServer <- function(id) {
     
     # Create wide format with d_tm
     df_wide <- reactive({
-      req(df_with_dtm())
+      req(df_with_dtm(), !rv$used_fallback)
       
       df <- df_with_dtm()
       meta <- data()$meta
       
       df %>%
-        pivot_wider(id_cols = any_of(c("plate", setdiff(colnames(meta), c("well", "target")))),
+        pivot_wider(id_cols = unique(any_of(c("plate", setdiff(colnames(meta), c("well", "target"))))),
                     names_from = target, values_from = d_tm,
                     names_prefix = 'dTM_',
                     values_fn = median) %>%
@@ -558,7 +729,7 @@ dsfServer <- function(id) {
       list(input$color_var, input$facet_vars, input$facet_ncol, input$plot_width, input$plot_height)
       
       deri <- data()$derivatives
-      validate(need(nrow(deri) > 0, "No derivatives could be computed"))
+      if (nrow(deri) == 0) validate("No derivatives could be computed")
       
       build_curve_plot(deri, rv$ref_ligand_val, 
                         input$color_var, input$facet_vars, 
@@ -655,13 +826,16 @@ dsfServer <- function(id) {
       },
       content = function(file) {
         req(data())
-        writexl::write_xlsx(list(
+        sheets <- list(
           "Merged Data" = df_with_dtm(),
-          "Wide Format" = df_wide(),
           "Metadata" = data()$meta,
           "Raw Fluorescence" = data()$mc_tidy,
           "1st Derivative" = data()$derivatives
-        ), file)
+        )
+        if (!rv$used_fallback) {
+          sheets[["Wide Format"]] <- df_wide()
+        }
+        writexl::write_xlsx(sheets, file)
       }
     )
     

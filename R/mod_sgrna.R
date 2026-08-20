@@ -35,12 +35,12 @@ sgRNAUI <- function(id) {
       ),
       hr(),
       actionButton(ns("design"), "Design Primers", icon = icon("magic"),
-                   class = "btn-success"),
+                   class = "btn-default"),
       br(), br(),
       downloadButton(ns("download"), "Download")
     ),
     column(9,
-      box(title = "Designed Primers", width = 12,
+      box(title = "Designed Primers", width = NULL, status = "primary", solidHeader = TRUE,
         tableOutput(ns("primer_table"))
       )
     )
