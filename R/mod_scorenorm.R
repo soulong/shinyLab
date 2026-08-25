@@ -52,8 +52,6 @@ scoreNormUI <- function(id) {
 
 scoreNormServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ns <- session$ns
-
     input_data <- eventReactive(input$transform_btn, {
       text <- input$input_numbers
       if (is.null(text) || trimws(text) == "") return(numeric(0))
@@ -105,7 +103,8 @@ scoreNormServer <- function(id) {
 
       par(mfrow = c(1, 2))
       hist(x, main = "Original Data", xlab = "Value", col = "lightblue", border = "white")
-      hist(y, main = "Transformed (Normal)", xlab = "Value", col = "lightcoral", border = "white")
+      hist(y, main = "Transformed (Normal)", xlab = "Value", col = "lightcoral",
+           border = "white", freq = FALSE)
 
       curve(dnorm(x, mean(y), sd(y)), add = TRUE, col = "red", lwd = 2)
     })
@@ -115,6 +114,7 @@ scoreNormServer <- function(id) {
         paste("normal_transformed_", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
+        req(length(input_data()) > 0)
         df <- data.frame(
           Original = input_data(),
           Transformed = transformed_data()

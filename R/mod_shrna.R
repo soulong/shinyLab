@@ -32,33 +32,45 @@ library(Biostrings)
 #' @export
 splashRNA <- function(id, n = 3, anno = "Gene") {
   n <- max(1, min(6, n))
-  
-  resp <- POST(
-    url = "http://splashrna.mskcc.org/show_results",
-    body = list(fasta = paste0("> entrezID\n", id),
-                n_predictions = as.character(n), removeRE = "on",
-                apa = "on", academic = "on", email = "user@example.com"),
-    add_headers(Origin = "http://splashrna.mskcc.org",
-                Referer = "http://splashrna.mskcc.org/"),
-    encode = "form"
+
+  resp <- tryCatch(
+    POST(
+      url = "http://splashrna.mskcc.org/show_results",
+      body = list(fasta = paste0("> entrezID\n", id),
+                  n_predictions = as.character(n), removeRE = "on",
+                  apa = "on", academic = "on", email = "user@example.com"),
+      add_headers(Origin = "http://splashrna.mskcc.org",
+                  Referer = "http://splashrna.mskcc.org/"),
+      encode = "form",
+      timeout(30)
+    ),
+    error = function(e) stop("splashRNA request failed: ", conditionMessage(e))
   )
-  
+
+  if (http_error(resp)) {
+    stop("splashRNA returned HTTP status ", resp$status_code,
+         ". The service may be unavailable.")
+  }
+
   html <- read_html(resp)
   base_xpath <- "/html/body/div[2]/div[2]/div/table/tbody/tr["
-  
+
+  cell_text <- function(row, col) {
+    node <- html_node(html, xpath = paste0(base_xpath, row, "]/td[", col, "]"))
+    if (is.null(node)) NA_character_ else html_text(node, trim = TRUE)
+  }
+
   results <- lapply(seq_len(n), function(i) {
     data.frame(
       ID = paste0(anno, "#", i),
-      Antisense = html %>%
-        html_node(xpath = paste0(base_xpath, i, "]/td[2]")) %>%
-        html_text(trim = TRUE),
-      Score = html %>%
-        html_node(xpath = paste0(base_xpath, i, "]/td[3]")) %>%
-        html_text(trim = TRUE),
+      Antisense = cell_text(i, 2),
+      Score = cell_text(i, 3),
       stringsAsFactors = FALSE
     )
   })
-  do.call(rbind, results)
+  out <- do.call(rbind, results)
+  # drop predictions whose table cells were missing
+  out[!is.na(out$Antisense), , drop = FALSE]
 }
 
 #' Batch Query splashRNA Database
@@ -70,6 +82,8 @@ splashRNA <- function(id, n = 3, anno = "Gene") {
 #' @param N Integer. Number of shRNA predictions per gene (1-6).
 #' @param Anno Character vector of annotation prefixes for each gene.
 #'   If NULL, auto-generates "Gene_1", "Gene_2", etc.
+#' @param on_gene Optional callback \code{function(i, total)} invoked after each
+#'   gene query (e.g., for progress bars).
 #'
 #' @return A data.frame with the same structure as \code{\link{splashRNA}},
 #'   containing results for all genes combined. Failed queries return empty
@@ -81,13 +95,13 @@ splashRNA <- function(id, n = 3, anno = "Gene") {
 #' }
 #'
 #' @export
-splashRNA_batch <- function(IDs, N = 3, Anno = NULL) {
+splashRNA_batch <- function(IDs, N = 3, Anno = NULL, on_gene = NULL) {
   if (is.null(Anno)) Anno <- paste0("Gene_", seq_along(IDs))
-  
+
   results <- lapply(seq_along(IDs), function(i) {
     message("Processing gene ", i, "/", length(IDs), ": ", IDs[i])
-    Sys.sleep(2)
-    tryCatch(
+    if (i < length(IDs)) Sys.sleep(2)
+    res <- tryCatch(
       splashRNA(IDs[i], N, Anno[i]),
       error = function(e) {
         warning("Failed: ", IDs[i], " - ", e$message)
@@ -95,6 +109,8 @@ splashRNA_batch <- function(IDs, N = 3, Anno = NULL) {
                    Score = character(0), stringsAsFactors = FALSE)
       }
     )
+    if (is.function(on_gene)) on_gene(i, length(IDs))
+    res
   })
   do.call(rbind, results)
 }
@@ -128,17 +144,24 @@ shRNA_primer <- function(splashRNA_result) {
   loop <- DNAString("TAGTGAAGCCACAGATGTA")
   ovlp5 <- DNAString("TGCTGTTGACAGTGAGCG")
   ovlp3 <- DNAString("TGCCTACTGCCTCGGACT")
-  
+
   primers <- lapply(seq_len(nrow(splashRNA_result)), function(i) {
-    anti <- DNAString(splashRNA_result$Antisense[i])
-    mm <- DNAString(switch(as.character(anti[22]),
-                           "A" = "C", "G" = "A", "C" = "A", "T" = "C"))
-    sense <- c(mm, reverseComplement(anti[-22]))
-    
+    anti_seq <- splashRNA_result$Antisense[i]
+    if (is.na(anti_seq) || !grepl("^[ATCG]+$", anti_seq) || nchar(anti_seq) != 22) {
+      warning("Skipping ", splashRNA_result$ID[i],
+              ": antisense sequence is not a valid 22-mer (got ",
+              if (is.na(anti_seq)) "NA" else paste0(nchar(anti_seq), " nt"), ")")
+      return(NULL)
+    }
+    anti <- DNAString(anti_seq)
+    mm_base <- switch(as.character(anti[22]),
+                      "A" = "C", "G" = "A", "C" = "A", "T" = "C")
+    sense <- c(DNAString(mm_base), reverseComplement(anti[-22]))
+
     primer_F <- as.character(paste0(loop, anti, ovlp3))
     primer_R <- as.character(reverseComplement(
       DNAString(paste0(ovlp5, sense, loop))))
-    
+
     id <- splashRNA_result$ID[i]
     data.frame(ID = c(paste0(id, "-F"), paste0(id, "-R")),
                Primer = c(primer_F, primer_R), stringsAsFactors = FALSE)
@@ -216,15 +239,28 @@ shRNAServer <- function(id) {
       }
       
       symbols <- valid[!duplicated(valid$ENTREZID), c("SYMBOL", "ENTREZID")]
-      
-      withProgress(message = "Querying splashRNA...", {
+
+      withProgress(message = "Querying splashRNA...", value = 0, {
         rv$antisense <- splashRNA_batch(
           entrez_ids, input$number,
-          symbols$SYMBOL[match(entrez_ids, symbols$ENTREZID)]
+          symbols$SYMBOL[match(entrez_ids, symbols$ENTREZID)],
+          on_gene = function(i, total) incProgress(1 / total)
         )
-        
-        if (!is.null(rv$antisense) && nrow(rv$antisense) > 0) {
-          rv$primer <- shRNA_primer(rv$antisense)
+
+        rv$primer <- if (!is.null(rv$antisense) && nrow(rv$antisense) > 0) {
+          tryCatch(shRNA_primer(rv$antisense),
+                   error = function(e) {
+                     showNotification(paste("Primer design failed:", e$message),
+                                      type = "error", duration = 10)
+                     NULL
+                   })
+        } else {
+          NULL
+        }
+
+        if (is.null(rv$antisense) || nrow(rv$antisense) == 0) {
+          showNotification("No shRNA predictions were retrieved from splashRNA",
+                           type = "warning", duration = 10)
         }
       })
     })
@@ -247,9 +283,10 @@ shRNAServer <- function(id) {
       filename = function() paste0("shRNA_", Sys.Date(), ".xlsx"),
       content = function(file) {
         sheets <- list()
-        if (!is.null(rv$antisense)) sheets$Antisense <- rv$antisense
-        if (!is.null(rv$primer)) sheets$Primers <- rv$primer
-        if (length(sheets) > 0) writexl::write_xlsx(sheets, file)
+        if (!is.null(rv$antisense) && nrow(rv$antisense) > 0) sheets$Antisense <- rv$antisense
+        if (!is.null(rv$primer) && nrow(rv$primer) > 0) sheets$Primers <- rv$primer
+        req(length(sheets) > 0)
+        writexl::write_xlsx(sheets, file)
       }
     )
   })

@@ -29,8 +29,12 @@ rnaseq_file_accept <- c(".csv", ".xlsx")
 # first 4 metadata columns are reserved: sample_name, batch, include, ...
 rnaseq_metadata_fixed_cols <- 1:4
 
-# worker pool for parallel enrichment (multisession)
-rnaseq_n_workers <- function() max(1, floor(parallel::detectCores() / 2))
+# worker pool for parallel enrichment (multisession), set up once at startup
+rnaseq_n_workers <- function() {
+  cores <- parallel::detectCores()
+  max(1, floor(ifelse(is.na(cores), 2, cores) / 2))
+}
+future::plan(future::multisession, workers = rnaseq_n_workers())
 
 
 # =============================================================================
@@ -47,7 +51,7 @@ rnaseq_n_workers <- function() max(1, floor(parallel::detectCores() / 2))
 rnaseq_build_dds <- function(counts, coldata, filter_symbol = TRUE, min_counts = 10) {
   if (filter_symbol) {
     counts <- dplyr::filter(counts, !is.na(gene_name))
-  } else {
+  } else if ("gene_id" %in% colnames(counts)) {
     counts <- dplyr::mutate(counts, gene_name = ifelse(is.na(gene_name), gene_id, gene_name))
   }
 
@@ -185,11 +189,6 @@ rnaseq_ora_direction <- function(genes, genesets, pval_cutoff, min_setSize, max_
 #' @param genesets TERM2GENE tibble from rnaseq_msigdb_geneset
 #' @return named list of result tibbles with a direction column
 rnaseq_run_ora <- function(results_sig, genesets, pval_cutoff, min_setSize, max_setSize) {
-  n_workers <- rnaseq_n_workers()
-  if (n_workers > 1) {
-    future::plan(future::multisession, workers = n_workers)
-    on.exit(future::plan(future::sequential), add = TRUE)
-  }
   out <- furrr::future_map(results_sig, function(res) {
     up <- dplyr::filter(res, log2FoldChange > 0) %>% pull(gene_name)
     down <- dplyr::filter(res, log2FoldChange < 0) %>% pull(gene_name)
@@ -213,11 +212,6 @@ rnaseq_run_ora <- function(results_sig, genesets, pval_cutoff, min_setSize, max_
 #' @return named list of clusterProfiler gseaResult objects (NULL entries dropped)
 rnaseq_run_gsea <- function(ranked_list, genesets, pval_cutoff = 0.05,
                             min_setSize = 10, max_setSize = 500) {
-  n_workers <- rnaseq_n_workers()
-  if (n_workers > 1) {
-    future::plan(future::multisession, workers = n_workers)
-    on.exit(future::plan(future::sequential), add = TRUE)
-  }
   out <- furrr::future_map(ranked_list, function(genelist) {
     genelist <- genelist[is.finite(genelist)]
     if (length(genelist) < 10) return(NULL)
@@ -411,7 +405,7 @@ rnaseq_dt <- function(data) {
 rnaseq_upload_ui <- function(id) {
   ns <- NS(id)
   fluidRow(
-    box(id = ns("upload_box"), status = "primary", solidHeader = TRUE, width = 12,
+    box(status = "primary", solidHeader = TRUE, width = 12,
         fileInput(ns("counts_file"),
                   paste0("Gene expression raw counts (", paste0(rnaseq_file_accept, collapse = "/"), ")"),
                   accept = rnaseq_file_accept),
@@ -508,17 +502,31 @@ rnaseq_upload_server <- function(id) {
       # ----- build colData -----
       output$choose_factors_ui <- renderUI({
         req(metadata())
+        cn <- colnames(metadata())
+        required <- c("sample_name", "batch", "include")
+        if (!all(required %in% cn)) {
+          showNotification(paste0(
+            "Metadata must contain the columns: ", paste0(required, collapse = ", "),
+            ". Found columns: ", paste(cn, collapse = ", ")),
+            type = "error", duration = 15)
+          return(helpText("Metadata is missing required column(s): ",
+                          paste(setdiff(required, cn), collapse = ", ")))
+        }
         checkboxGroupInput(ns("choose_factors"), label = NULL, inline = TRUE,
-                           choiceNames = colnames(metadata())[-rnaseq_metadata_fixed_cols],
-                           choiceValues = colnames(metadata())[-rnaseq_metadata_fixed_cols],
-                           selected = colnames(metadata())[-rnaseq_metadata_fixed_cols])
+                           choiceNames = cn[-rnaseq_metadata_fixed_cols],
+                           choiceValues = cn[-rnaseq_metadata_fixed_cols],
+                           selected = cn[-rnaseq_metadata_fixed_cols])
       })
 
       coldata <- reactive({
         req(input$choose_factors)
         data <- metadata_final()
+        if (anyDuplicated(data$sample_name) > 0) {
+          showNotification("Metadata contains duplicated sample_name values; deduplicate before running DESeq2.",
+                           type = "warning", duration = 10)
+        }
         data$condition <- apply(data[, input$choose_factors, drop = FALSE], 1, paste0, collapse = ".")
-        data <- dplyr::filter(data, include == "yes") %>%
+        data <- dplyr::filter(data, tolower(trimws(include)) == "yes") %>%
           .[, c("sample_name", "batch", "condition"), drop = FALSE] %>%
           tibble::column_to_rownames("sample_name")
         data
@@ -649,8 +657,8 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       output$dl_pca <- downloadHandler(
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_pca.pdf"),
         content = function(file) {
-          tryCatch(ggsave(file, pca_p(), width = 7, height = 6, device = pdf),
-                   error = function(e) showNotification("PCA plot not ready for download", type = "error"))
+          req(pca_p())
+          ggsave(file, pca_p(), width = 7, height = 6, device = pdf)
         })
 
       # ----- sample correlation -----
@@ -668,14 +676,11 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       output$dl_cor <- downloadHandler(
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_correlation.pdf"),
         content = function(file) {
-          tryCatch({
-            pdf(file, width = 7, height = 7)
-            cor_plot_fn()()
-            dev.off()
-          }, error = function(e) {
-            try(dev.off(), silent = TRUE)
-            showNotification("Correlation plot not ready for download", type = "error")
-          })
+          req(cor_plot_fn())
+          pdf(file, width = 7, height = 7)
+          on.exit(if (dev.cur() > 1) dev.off(), add = TRUE)
+          cor_plot_fn()()
+          dev.off()
         })
 
       # ----- top variable genes heatmap -----
@@ -701,8 +706,8 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       output$dl_topvar <- downloadHandler(
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_variable_genes_heatmap.pdf"),
         content = function(file) {
-          tryCatch(ggsave(file, top_var_p(), width = 8, height = 10, device = pdf),
-                   error = function(e) showNotification("Heatmap not ready for download", type = "error"))
+          req(top_var_p())
+          ggsave(file, top_var_p(), width = 8, height = 10, device = pdf)
         })
 
       # ----- QC result boxes (hidden until DESeq2 has run) -----
@@ -784,13 +789,16 @@ rnaseq_dge_server <- function(id, dds) {
 
       # ----- dynamic comparison UI -----
       counter <- reactiveVal(integer(0))
+      next_id <- reactiveVal(1L)
 
       observeEvent(input$add_compare, {
         req(dds())
         conditions <- unique(colData(dds())$condition)
 
-        # counter holds the ids of existing comparison UIs
-        n_now <- if (length(counter()) == 0) 1 else dplyr::last(counter()) + 1
+        # ids of existing comparison UIs; next_id never gets recycled so a
+        # stale remove-button value can never delete a freshly added row
+        n_now <- next_id()
+        next_id(n_now + 1L)
         counter(c(counter(), n_now))
 
         insertUI(selector = paste0("#", ns("compare_container")), where = "beforeEnd", immediate = TRUE,
@@ -815,8 +823,8 @@ rnaseq_dge_server <- function(id, dds) {
       observe({
         req(length(counter()) > 0)
         lapply(counter(), function(i) {
-          remove_compare_buttom <- input[[paste0("remove_compare_", i)]]
-          if (isTruthy(remove_compare_buttom)) {
+          remove_btn <- input[[paste0("remove_compare_", i)]]
+          if (isTruthy(remove_btn)) {
             removeUI(selector = paste0("#", ns(paste0("compare_insertUI_", i))), immediate = TRUE)
             counter(counter()[-which(counter() == i)])
           }
@@ -831,6 +839,13 @@ rnaseq_dge_server <- function(id, dds) {
         compare_list <- purrr::map(counter(), function(i) {
           c(input[[paste0("compare_contrast_", i)]], input[[paste0("compare_control_", i)]])
         })
+        bad <- purrr::map_lgl(compare_list, ~ is.na(.x[1]) || is.na(.x[2]) || .x[1] == .x[2])
+        if (any(bad)) {
+          showNotification("Contrast and control must be different conditions; ignoring those comparison(s).",
+                           type = "warning", duration = 8)
+          compare_list <- compare_list[!bad]
+        }
+        if (length(compare_list) == 0) validate("No valid comparisons selected")
 
         withProgress(message = "Wald test ...", value = 0.1, {
           out <- purrr::imap(compare_list, function(cmp, i) {
@@ -863,8 +878,10 @@ rnaseq_dge_server <- function(id, dds) {
 
       # ----- volcano -----
       volcano_p <- reactive({
-        req(results_sig(), input$sig_table_tabbox)
-        df <- results_sig()[[input$sig_table_tabbox]]
+        req(results(), input$sig_table_tabbox)
+        # feed the FULL result table so non-significant genes render as the
+        # gray background cloud; rnaseq_plot_volcano applies the thresholds
+        df <- results()[[input$sig_table_tabbox]]
         rnaseq_plot_volcano(df,
                             plot_title = input$sig_table_tabbox,
                             baseMean_thred = input$baseMean_threshold,
@@ -872,7 +889,7 @@ rnaseq_dge_server <- function(id, dds) {
                             padj_thred = input$padj_threshold)
       })
 
-      output$sig_valcano <- renderPlotly({
+      output$sig_volcano <- renderPlotly({
         req(volcano_p())
         ggplotly(volcano_p(), tooltip = c("text", "log2FoldChange", "-log10(padj)"))
       })
@@ -883,8 +900,8 @@ rnaseq_dge_server <- function(id, dds) {
           paste0(format(Sys.Date(), "%Y-%m-%d"), "_", cmp, "_volcano.pdf")
         },
         content = function(file) {
-          tryCatch(ggsave(file, volcano_p(), width = 7, height = 6, device = pdf),
-                   error = function(e) showNotification("Volcano plot not ready for download", type = "error"))
+          req(volcano_p())
+          ggsave(file, volcano_p(), width = 7, height = 6, device = pdf)
         })
 
       # ----- volcano box (hidden until comparison results exist) -----
@@ -895,7 +912,7 @@ rnaseq_dge_server <- function(id, dds) {
               div(style = "position:relative",
                   tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
                            downloadButton(ns("dl_volcano"), label = NULL, icon = icon("download"), class = "btn-xs")),
-                  plotlyOutput(ns("sig_valcano"))
+                  plotlyOutput(ns("sig_volcano"))
               )
           )
         )
@@ -1020,8 +1037,8 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
           paste0(format(Sys.Date(), "%Y-%m-%d"), "_", cmp, "_ORA_dotplot.pdf")
         },
         content = function(file) {
-          tryCatch(ggsave(file, ora_dot_p(), width = 8, height = 6, device = pdf),
-                   error = function(e) showNotification("ORA dot plot not ready for download", type = "error"))
+          req(ora_dot_p())
+          ggsave(file, ora_dot_p(), width = 8, height = 6, device = pdf)
         })
 
       # ----- pathway genes heatmap (DEGs) -----
@@ -1061,8 +1078,8 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
           paste0(format(Sys.Date(), "%Y-%m-%d"), "_", cmp, "_", pwy, "_DEG_heatmap.pdf")
         },
         content = function(file) {
-          tryCatch(ggsave(file, ora_heat_p(), width = 8, height = 6, device = pdf),
-                   error = function(e) showNotification("Pathway heatmap not ready for download", type = "error"))
+          req(ora_heat_p())
+          ggsave(file, ora_heat_p(), width = 8, height = 6, device = pdf)
         })
 
       # ----- GSEA (runs immediately on click, cached per parameters/data) -----
@@ -1120,8 +1137,8 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
           paste0(format(Sys.Date(), "%Y-%m-%d"), "_", cmp, "_GSEA_dotplot.pdf")
         },
         content = function(file) {
-          tryCatch(ggsave(file, gsea_dot_p(), width = 8, height = 6, device = pdf),
-                   error = function(e) showNotification("GSEA dot plot not ready for download", type = "error"))
+          req(gsea_dot_p())
+          ggsave(file, gsea_dot_p(), width = 8, height = 6, device = pdf)
         })
 
       # pathway selector for running score plot (follows the comparison result tab)
@@ -1152,8 +1169,8 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
           paste0(format(Sys.Date(), "%Y-%m-%d"), "_", cmp, "_", pwy, "_GSEA_running_score.pdf")
         },
         content = function(file) {
-          tryCatch(ggsave(file, gsea_gsea_p(), width = 8, height = 7, device = pdf),
-                   error = function(e) showNotification("GSEA plot not ready for download", type = "error"))
+          req(gsea_gsea_p())
+          ggsave(file, gsea_gsea_p(), width = 8, height = 7, device = pdf)
         })
 
       # ----- enrichment result tabs (hidden until ORA/GSEA results exist) -----

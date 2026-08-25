@@ -593,40 +593,6 @@
         "Built": "R 4.6.0; ; 2026-04-29 15:12:33 UTC; windows"
       }
     },
-    "Hmisc": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "Hmisc",
-        "Version": "5.2-6",
-        "Date": "2026-06-18",
-        "Title": "Harrell Miscellaneous",
-        "Authors@R": "\n    c(person(given   = \"Frank E\",\n             family  = \"Harrell Jr\",\n             role    = c(\"aut\", \"cre\"),\n             email   = \"fh@fharrell.com\",\n             comment = c(ORCID = \"0000-0002-8271-5493\")),\n      person(given   = \"Cole\",\n             family  = \"Beck\",\n             role    = c(\"ctb\"),\n             email   = \"cole.beck@vumc.org\" ),\n\t\t\tperson(given   = \"Charles\",\n\t\t\t       family  = \"Dupont\",\n\t\t\t\t\t\t role    = \"ctb\") )",
-        "Depends": "R (>= 4.2.0)",
-        "Imports": "methods, ggplot2, cluster, rpart, nnet, foreign, gtable, grid,\ngridExtra, data.table, htmlTable (>= 1.11.0), viridisLite,\nhtmltools, base64enc, colorspace, rmarkdown, knitr, Formula",
-        "Suggests": "survival, qreport, acepack, chron, rms, mice, rstudioapi,\ntables, plotly (>= 4.5.6), rlang, VGAM, leaps, pcaPP, digest,\nparallel, polspline, abind, kableExtra, rio, lattice,\nlatticeExtra, gt, sparkline, jsonlite, htmlwidgets, qs2,\ngetPass, keyring, safer, htm2txt, boot",
-        "Description": "Contains many functions useful for data\n\tanalysis, high-level graphics, utility operations, functions for\n\tcomputing sample size and power, simulation, importing and annotating datasets,\n\timputing missing values, advanced table making, variable clustering,\n\tcharacter string manipulation, conversion of R objects to LaTeX and html code,\n\trecoding variables, caching, simplified parallel computing, encrypting and decrypting data using a safe workflow, general moving window statistical estimation, and assistance in interpreting principal component analysis.",
-        "License": "GPL (>= 2)",
-        "LazyLoad": "Yes",
-        "URL": "https://hbiostat.org/R/Hmisc/",
-        "Encoding": "UTF-8",
-        "Config/roxygen2/version": "8.0.0",
-        "NeedsCompilation": "yes",
-        "Packaged": "2026-06-18 19:06:02 UTC; harrelfe",
-        "Author": "Frank E Harrell Jr [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-8271-5493>),\n  Cole Beck [ctb],\n  Charles Dupont [ctb]",
-        "Maintainer": "Frank E Harrell Jr <fh@fharrell.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-06-19 05:10:39 UTC",
-        "Built": "R 4.6.1; x86_64-w64-mingw32; 2026-07-28 04:58:59 UTC; windows",
-        "Archs": "x64",
-        "RemoteType": "standard",
-        "RemotePkgRef": "Hmisc",
-        "RemoteRef": "Hmisc",
-        "RemoteRepos": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-        "RemotePkgPlatform": "x86_64-w64-mingw32",
-        "RemoteSha": "5.2-6"
-      }
-    },
     "IRanges": {
       "Source": "Bioconductor",
       "Repository": "https://bioconductor.org/packages/3.23/bioc",
@@ -855,81 +821,6 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-03-26 08:50:02 UTC",
         "Built": "R 4.6.1; ; 2026-07-14 02:18:00 UTC; windows"
-      }
-    },
-    "R.methodsS3": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "R.methodsS3",
-        "Version": "1.8.2",
-        "Depends": "R (>= 2.13.0)",
-        "Imports": "utils",
-        "Suggests": "codetools",
-        "Title": "S3 Methods Simplified",
-        "Authors@R": "c(person(\"Henrik\", \"Bengtsson\", role=c(\"aut\", \"cre\", \"cph\"),\n                                          email = \"henrikb@braju.com\"))",
-        "Author": "Henrik Bengtsson [aut, cre, cph]",
-        "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
-        "Description": "Methods that simplify the setup of S3 generic functions and S3 methods.  Major effort has been made in making definition of methods as simple as possible with a minimum of maintenance for package developers.  For example, generic functions are created automatically, if missing, and naming conflict are automatically solved, if possible.  The method setMethodS3() is a good start for those who in the future may want to migrate to S4.  This is a cross-platform package implemented in pure R that generates standard S3 methods.",
-        "License": "LGPL (>= 2.1)",
-        "LazyLoad": "TRUE",
-        "URL": "https://github.com/HenrikBengtsson/R.methodsS3",
-        "BugReports": "https://github.com/HenrikBengtsson/R.methodsS3/issues",
-        "NeedsCompilation": "no",
-        "Packaged": "2022-06-13 18:23:35 UTC; hb",
-        "Repository": "CRAN",
-        "Date/Publication": "2022-06-13 22:00:14 UTC",
-        "Built": "R 4.6.0; ; 2026-04-21 00:41:08 UTC; windows"
-      }
-    },
-    "R.oo": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "R.oo",
-        "Version": "1.27.1",
-        "Depends": "R (>= 2.13.0), R.methodsS3 (>= 1.8.2)",
-        "Imports": "methods, utils",
-        "Suggests": "tools",
-        "Title": "R Object-Oriented Programming with or without References",
-        "Authors@R": "c(person(\"Henrik\", \"Bengtsson\", role=c(\"aut\", \"cre\", \"cph\"),\n                                          email = \"henrikb@braju.com\"))",
-        "Author": "Henrik Bengtsson [aut, cre, cph]",
-        "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
-        "Description": "Methods and classes for object-oriented programming in R with or without references.  Large effort has been made on making definition of methods as simple as possible with a minimum of maintenance for package developers.  The package has been developed since 2001 and is now considered very stable.  This is a cross-platform package implemented in pure R that defines standard S3 classes without any tricks.",
-        "License": "LGPL (>= 2.1)",
-        "LazyLoad": "TRUE",
-        "URL": "https://henrikbengtsson.github.io/R.oo/,\nhttps://github.com/HenrikBengtsson/R.oo",
-        "BugReports": "https://github.com/HenrikBengtsson/R.oo/issues",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-05-02 20:29:15 UTC; henrik",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-05-02 21:00:05 UTC",
-        "Built": "R 4.6.0; ; 2026-04-21 01:58:02 UTC; windows"
-      }
-    },
-    "R.utils": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "R.utils",
-        "Version": "2.13.0",
-        "Depends": "R (>= 2.14.0), R.oo",
-        "Imports": "methods, utils, tools, R.methodsS3",
-        "Suggests": "datasets, digest (>= 0.6.10)",
-        "Title": "Various Programming Utilities",
-        "Authors@R": "c(person(\"Henrik\", \"Bengtsson\", role=c(\"aut\", \"cre\", \"cph\"),\n                                          email = \"henrikb@braju.com\"))",
-        "Author": "Henrik Bengtsson [aut, cre, cph]",
-        "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
-        "Description": "Utility functions useful when programming and developing R packages.",
-        "License": "LGPL (>= 2.1)",
-        "LazyLoad": "TRUE",
-        "URL": "https://henrikbengtsson.github.io/R.utils/,\nhttps://github.com/HenrikBengtsson/R.utils",
-        "BugReports": "https://github.com/HenrikBengtsson/R.utils/issues",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-02-24 19:44:20 UTC; henrik",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-02-24 21:20:02 UTC",
-        "Built": "R 4.6.1; ; 2026-07-14 01:03:08 UTC; windows"
       }
     },
     "R6": {
@@ -3303,37 +3194,6 @@
         "Archs": "x64"
       }
     },
-    "foreign": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "foreign",
-        "Priority": "recommended",
-        "Version": "0.8-91",
-        "Date": "2026-01-29",
-        "Title": "Read Data Stored by 'Minitab', 'S', 'SAS', 'SPSS', 'Stata',\n'Systat', 'Weka', 'dBase', ...",
-        "Depends": "R (>= 4.0.0)",
-        "Imports": "methods, utils, stats",
-        "Authors@R": "c(\n    person(\"R Core Team\", email = \"R-core@R-project.org\",\n \t   role = c(\"aut\", \"cph\", \"cre\"),\n\t   comment = c(ROR = \"02zz1nj61\")),\n    person(\"Roger\", \"Bivand\", role = c(\"ctb\", \"cph\")),\n    person(c(\"Vincent\", \"J.\"), \"Carey\", role = c(\"ctb\", \"cph\")),\n    person(\"Saikat\", \"DebRoy\", role = c(\"ctb\", \"cph\")),\n    person(\"Stephen\", \"Eglen\", role = c(\"ctb\", \"cph\")),\n    person(\"Rajarshi\", \"Guha\", role = c(\"ctb\", \"cph\")),\n    person(\"Swetlana\", \"Herbrandt\", role = \"ctb\"),\n    person(\"Nicholas\", \"Lewin-Koh\", role = c(\"ctb\", \"cph\")),\n    person(\"Mark\", \"Myatt\", role = c(\"ctb\", \"cph\")),\n    person(\"Michael\", \"Nelson\", role = \"ctb\"),\n    person(\"Ben\", \"Pfaff\", role = \"ctb\"),\n    person(\"Brian\", \"Quistorff\", role = \"ctb\"),\n    person(\"Frank\", \"Warmerdam\", role = c(\"ctb\", \"cph\")),\n    person(\"Stephen\", \"Weigand\", role = c(\"ctb\", \"cph\")),\n    person(\"Free Software Foundation, Inc.\", role = \"cph\"))",
-        "Contact": "see 'MailingList'",
-        "Copyright": "see file COPYRIGHTS",
-        "Description": "Reading and writing data stored by some versions of\n\t'Epi Info', 'Minitab', 'S', 'SAS', 'SPSS', 'Stata', 'Systat', 'Weka',\n\tand for reading and writing some 'dBase' files.",
-        "ByteCompile": "yes",
-        "Biarch": "yes",
-        "License": "GPL (>= 2)",
-        "BugReports": "https://bugs.r-project.org",
-        "MailingList": "R-help@r-project.org",
-        "URL": "https://svn.r-project.org/R-packages/trunk/foreign/",
-        "NeedsCompilation": "yes",
-        "Packaged": "2026-01-29 16:57:48 UTC; hornik",
-        "Author": "R Core Team [aut, cph, cre] (ROR: <https://ror.org/02zz1nj61>),\n  Roger Bivand [ctb, cph],\n  Vincent J. Carey [ctb, cph],\n  Saikat DebRoy [ctb, cph],\n  Stephen Eglen [ctb, cph],\n  Rajarshi Guha [ctb, cph],\n  Swetlana Herbrandt [ctb],\n  Nicholas Lewin-Koh [ctb, cph],\n  Mark Myatt [ctb, cph],\n  Michael Nelson [ctb],\n  Ben Pfaff [ctb],\n  Brian Quistorff [ctb],\n  Frank Warmerdam [ctb, cph],\n  Stephen Weigand [ctb, cph],\n  Free Software Foundation, Inc. [cph]",
-        "Maintainer": "R Core Team <R-core@R-project.org>",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-01-29 17:49:54 UTC",
-        "Built": "R 4.6.1; x86_64-w64-mingw32; 2026-06-24 08:32:28 UTC; windows",
-        "Archs": "x64"
-      }
-    },
     "formatR": {
       "Source": "CRAN",
       "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
@@ -4176,30 +4036,6 @@
         "RemoteSha.Version": "0.11.2"
       }
     },
-    "gridExtra": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "gridExtra",
-        "Authors@R": "c(person(\"Baptiste\", \"Auguie\",\n    email = \"baptiste.auguie@vuw.ac.nz\",\n    role = c(\"aut\", \"cre\")), person(\"Anton\", \"Antonov\",\n    email = \"tonytonov@gmail.com\",\n    role = c(\"ctb\")))",
-        "License": "GPL (>= 2)",
-        "Title": "Miscellaneous Functions for \"Grid\" Graphics",
-        "Type": "Package",
-        "Description": "Provides a number of user-level functions to work with \"grid\"\n    graphics, notably to arrange multiple grid-based plots on a page, and draw\n    tables.",
-        "Version": "2.3.1",
-        "VignetteBuilder": "knitr",
-        "Imports": "gtable, grid, grDevices, graphics, utils",
-        "Suggests": "ggplot2, egg, lattice, knitr, testthat",
-        "RoxygenNote": "6.0.1",
-        "NeedsCompilation": "no",
-        "Packaged": "2026-06-25 06:16:42 UTC; hornik",
-        "Author": "Baptiste Auguie [aut, cre],\n  Anton Antonov [ctb]",
-        "Maintainer": "Baptiste Auguie <baptiste.auguie@vuw.ac.nz>",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-06-25 08:54:51 UTC",
-        "Built": "R 4.6.1; ; 2026-07-14 02:38:17 UTC; windows"
-      }
-    },
     "gridGraphics": {
       "Source": "CRAN",
       "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
@@ -4443,40 +4279,6 @@
         "RemoteRef": "hms",
         "RemoteRepos": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
         "RemoteSha.Version": "1.1.4"
-      }
-    },
-    "htmlTable": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "htmlTable",
-        "Version": "2.5.0",
-        "Title": "Advanced Tables for Markdown/HTML",
-        "Authors@R": "c(\n  person(\"Max\", \"Gordon\", email = \"max@gforge.se\",\n         role = c(\"aut\", \"cre\")),\n  person(\"Stephen\", \"Gragg\", role=c(\"aut\")),\n  person(\"Peter\", \"Konings\", role=c(\"aut\")))",
-        "Maintainer": "Max Gordon <max@gforge.se>",
-        "Description": "Tables with state-of-the-art layout elements such as row spanners,\n    column spanners, table spanners, zebra striping, and more. While allowing\n    advanced layout, the underlying css-structure is simple in order to maximize\n    compatibility with common word processors. The package also contains a few\n    text formatting functions that help outputting text compatible with HTML/LaTeX.",
-        "License": "GPL (>= 3)",
-        "URL": "https://gforge.se/packages/",
-        "BugReports": "https://github.com/gforge/htmlTable/issues",
-        "Biarch": "yes",
-        "Depends": "R (>= 4.1)",
-        "Imports": "stringr, knitr (>= 1.6), magrittr (>= 1.5), methods,\ncheckmate, htmlwidgets, htmltools, rstudioapi (>= 0.6)",
-        "Suggests": "testthat, XML, xml2, Hmisc, rmarkdown, chron, lubridate,\ntibble, purrr, tidyselect, glue, rlang, tidyr (>= 0.7.2), dplyr\n(>= 0.7.4)",
-        "Encoding": "UTF-8",
-        "NeedsCompilation": "no",
-        "VignetteBuilder": "knitr",
-        "RoxygenNote": "7.3.3",
-        "Packaged": "2026-04-21 11:31:38 UTC; max",
-        "Author": "Max Gordon [aut, cre],\n  Stephen Gragg [aut],\n  Peter Konings [aut]",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-04-22 05:50:08 UTC",
-        "Built": "R 4.6.1; ; 2026-07-28 04:37:43 UTC; windows",
-        "RemoteType": "standard",
-        "RemotePkgRef": "htmlTable",
-        "RemoteRef": "htmlTable",
-        "RemoteRepos": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-        "RemotePkgPlatform": "i386+x86_64-w64-mingw32",
-        "RemoteSha": "2.5.0"
       }
     },
     "htmltools": {
@@ -7274,35 +7076,6 @@
         "RemoteSha.Version": "0.3.8"
       }
     },
-    "rio": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "rio",
-        "Type": "Package",
-        "Title": "A Swiss-Army Knife for Data I/O",
-        "Version": "1.3.0",
-        "Authors@R": "c(person(\"Jason\", \"Becker\", role = \"aut\", email = \"jason@jbecker.co\"),\n             person(\"Chung-hong\", \"Chan\", role = c(\"aut\", \"cre\"), email = \"chainsawtiney@gmail.com\",\n\t     \t     comment = c(ORCID = \"0000-0002-6232-7530\")),\n             person(\"David\", \"Schoch\", email = \"david@schochastics.net\", role = c(\"aut\"),\n                     comment = c(ORCID = \"0000-0003-2952-4812\")),\n             person(\"Geoffrey CH\", \"Chan\", role = \"ctb\", email = \"gefchchan@gmail.com\"),\n             person(\"Thomas J.\", \"Leeper\",\n                    role = \"aut\", \n                    email = \"thosjleeper@gmail.com\",\n                    comment = c(ORCID = \"0000-0003-4097-6326\")),\n             person(\"Christopher\", \"Gandrud\", role = \"ctb\"),\n             person(\"Andrew\", \"MacDonald\", role = \"ctb\"),\n             person(\"Ista\", \"Zahn\", role = \"ctb\"),\n             person(\"Stanislaus\", \"Stadlmann\", role = \"ctb\"),\n             person(\"Ruaridh\", \"Williamson\", role = \"ctb\", email = \"ruaridh.williamson@gmail.com\"),\n             person(\"Patrick\", \"Kennedy\", role = \"ctb\"),\n             person(\"Ryan\", \"Price\", email = \"ryapric@gmail.com\", role = \"ctb\"),\n             person(\"Trevor L\", \"Davis\", email = \"trevor.l.davis@gmail.com\", role = \"ctb\"),\n             person(\"Nathan\", \"Day\", email = \"nathancday@gmail.com\", role = \"ctb\"),\n             person(\"Bill\", \"Denney\",\n                    email=\"wdenney@humanpredictions.com\",\n                    role=\"ctb\",\n                    comment=c(ORCID=\"0000-0002-5759-428X\")),\n             person(\"Alex\", \"Bokov\", email = \"alex.bokov@gmail.com\", role = \"ctb\",\n                    comment=c(ORCID=\"0000-0002-0511-9815\")),\n             person(\"Hugo\", \"Gruson\", role = \"ctb\", comment = c(ORCID = \"0000-0002-4094-1476\")),\n             person(\"Jacob\", \"Mears\", role = \"ctb\"))",
-        "Description": "Streamlined data import and export by making assumptions that\n    the user is probably willing to make: 'import()' and 'export()' determine\n    the data format from the file extension, reasonable defaults are used for\n    data import and export, web-based import is natively supported (including\n    from SSL/HTTPS), compressed files can be read directly, and fast import\n    packages are used where appropriate. An additional convenience function,\n    'convert()', provides a simple method for converting between file types.",
-        "URL": "https://gesistsa.github.io/rio/, https://github.com/gesistsa/rio",
-        "BugReports": "https://github.com/gesistsa/rio/issues",
-        "Depends": "R (>= 4.0)",
-        "Imports": "tools, stats, utils, foreign, haven (>= 1.1.2), curl (>= 0.6),\ndata.table (>= 1.11.2), readxl (>= 0.1.1), tibble, writexl,\nlifecycle, R.utils (>= 2.13.0), readr",
-        "Suggests": "datasets, bit64, testthat, knitr, magrittr, clipr, fst,\nhexView, jsonlite, pzfx, readODS (>= 2.1.0), rmarkdown, rmatio,\nxml2 (>= 1.2.0), yaml, arrow (>= 0.17.0), stringi, withr,\nnanoparquet, qs2 (>= 0.1.5)",
-        "License": "GPL-2",
-        "VignetteBuilder": "knitr",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.2",
-        "Config/Needs/website": "gesistsa/tsatemplate",
-        "NeedsCompilation": "no",
-        "Packaged": "2026-04-01 15:37:49 UTC; chainsawriot",
-        "Author": "Jason Becker [aut],\n  Chung-hong Chan [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-6232-7530>),\n  David Schoch [aut] (ORCID: <https://orcid.org/0000-0003-2952-4812>),\n  Geoffrey CH Chan [ctb],\n  Thomas J. Leeper [aut] (ORCID: <https://orcid.org/0000-0003-4097-6326>),\n  Christopher Gandrud [ctb],\n  Andrew MacDonald [ctb],\n  Ista Zahn [ctb],\n  Stanislaus Stadlmann [ctb],\n  Ruaridh Williamson [ctb],\n  Patrick Kennedy [ctb],\n  Ryan Price [ctb],\n  Trevor L Davis [ctb],\n  Nathan Day [ctb],\n  Bill Denney [ctb] (ORCID: <https://orcid.org/0000-0002-5759-428X>),\n  Alex Bokov [ctb] (ORCID: <https://orcid.org/0000-0002-0511-9815>),\n  Hugo Gruson [ctb] (ORCID: <https://orcid.org/0000-0002-4094-1476>),\n  Jacob Mears [ctb]",
-        "Maintainer": "Chung-hong Chan <chainsawtiney@gmail.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-04-02 07:40:02 UTC",
-        "Built": "R 4.6.1; ; 2026-07-14 04:24:00 UTC; windows"
-      }
-    },
     "rlang": {
       "Source": "CRAN",
       "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
@@ -9345,37 +9118,43 @@
       "checksum": "05bdb783ee6514c8c072e47680af8ff7"
     },
     "app.R": {
-      "checksum": "4be5e5acf0dcfcad3c2e9d864a010a16"
+      "checksum": "92cb445a3475acad58fcfed84a9d2d11"
     },
     "LICENSE": {
       "checksum": "768518fb1880e71abc16e4b1f6380513"
     },
     "R/mod_dsf.R": {
-      "checksum": "9c1217ee6284c7eab3a54da7ff51ab3c"
+      "checksum": "774652b0c6f0eefb04ad30b298afae46"
     },
     "R/mod_rnaseq.R": {
-      "checksum": "ae6c162b9016b9a96890fa5c022293c6"
+      "checksum": "32db61314cdce220cbd46f108fdd0fe4"
     },
     "R/mod_rtpcr.R": {
-      "checksum": "d1dc4babd09d4a7b54de10cae3c7aed9"
+      "checksum": "7b3651cf3fa414cd0f35d6ee81c9d9f4"
     },
     "R/mod_scorenorm.R": {
-      "checksum": "cec5f569cc6ff5a60f03e72dfc73b742"
+      "checksum": "4f8229dcd38e1e549bd80ccabfbe25f7"
     },
     "R/mod_sgrna.R": {
-      "checksum": "8f3d4df0793bf657684647a215b1a32a"
+      "checksum": "96314543d46be0d069832a1aec37c43d"
     },
     "R/mod_shrna.R": {
-      "checksum": "de4c44c7a002e81d8bdda075bf13e12f"
+      "checksum": "a6a62d500b53b7db5b138f9c17b88aa5"
     },
     "R/mod_synergy.R": {
-      "checksum": "3c9aea1c99371235d74956be15a22613"
+      "checksum": "582f8daf76d2949f68e94dc7982dffbd"
     },
     "R/utils.R": {
-      "checksum": "c1bc3e3cd72a74fc444269093510084a"
+      "checksum": "d0b2d29dd4417ff9fc35c093ca556fb8"
     },
     "README.md": {
-      "checksum": "150d5c34638622a5a48156aac791d0f9"
+      "checksum": "b4164399cde3ab4321dbd8360fde33db"
+    },
+    "rnaseq_example_data/example_counts.xlsx": {
+      "checksum": "0daef6199b42c576e795c76793df94c6"
+    },
+    "rnaseq_example_data/example_metadata.xlsx": {
+      "checksum": "3ea20d655e30cc0447cecba774cd8cfb"
     }
   },
   "users": null

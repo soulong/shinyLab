@@ -2,7 +2,6 @@
 library(readxl)
 library(writexl)
 library(janitor)
-require(Hmisc)
 
 rtPCRUI <- function(id) {
   ns <- NS(id)
@@ -44,7 +43,7 @@ rtPCRUI <- function(id) {
           )
         ),
         tabPanel("Data",
-          tableOutput(ns("table_summary")), hr(),
+          tableOutput(ns("table_summary")), hr()
         ),
         tabPanel("Melt Curve",
           plotOutput(ns("plot_mc_1"), width="100%", height="300px"), hr(),
@@ -57,50 +56,54 @@ rtPCRUI <- function(id) {
 
 rtPCRServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ns <- session$ns
     rv <- reactiveValues(ct=NULL, mc=NULL, result=NULL)
-    
+
     # Read uploaded file
     observeEvent(input$userfile, {
       req(input$userfile)
-      
-new_path <- paste0(input$userfile$datapath, ".xlsx")
+
+      new_path <- paste0(input$userfile$datapath, ".xlsx")
       if (!file.rename(input$userfile$datapath, new_path)) {
         showNotification("Failed to rename uploaded file", type = "error")
         return()
       }
 
       row_x <- NULL
+      ct <- NULL
       for (i in 24:50) {
-        suppressMessages(ct <- read_excel(new_path, sheet='Results', skip=i))
-        if (colnames(ct)[1] == 'Well') {
+        ct_try <- tryCatch(
+          read_excel(new_path, sheet = 'Results', skip = i),
+          error = function(e) NULL
+        )
+        if (is.null(ct_try) || ncol(ct_try) == 0) break
+        if (identical(colnames(ct_try)[1], 'Well')) {
           row_x <- i
+          ct <- ct_try
           break
         }
       }
-      
+
       if (is.null(row_x)) {
-        showNotification("Could not find valid data starting row in the file", type = "error")
+        showNotification("Could not find a valid data start row (a 'Well' header) on sheet 'Results' in the file", type = "error")
         return()
       }
       
       # deal with CT data
-      ct <- ct %>% 
-        dplyr::select(2,4,5,13) %>% 
-        set_names(c("well", "sample", "target", "ct")) %>% 
-        janitor::remove_empty('rows') #%>% print()
+      ct <- ct %>%
+        dplyr::select(2,4,5,13) %>%
+        set_names(c("well", "sample", "target", "ct")) %>%
+        janitor::remove_empty('rows')
       rv$ct <- ct
-      
+
       # deal with MC data
-      mc_sheet <- ifelse('Melt Curve Raw' %in% excel_sheets(new_path), 'Melt Curve Raw', 
+      mc_sheet <- ifelse('Melt Curve Raw' %in% excel_sheets(new_path), 'Melt Curve Raw',
                          ifelse('Melt Curve Raw Data' %in% excel_sheets(new_path), 'Melt Curve Raw Data', NA))
       if(!is.na(mc_sheet)) {
-        print('read melting cureve data')
-        mc <- read_excel(new_path, sheet=mc_sheet, skip=row_x) %>% 
-          dplyr::select(2,4:7) %>% 
-          set_names(c("well", "target", "temperature", "fluorescence", "derivative")) %>% 
-          janitor::remove_empty('rows') %>% 
-          left_join(ct[, 1:3]) #%>% print()
+        mc <- read_excel(new_path, sheet=mc_sheet, skip=row_x) %>%
+          dplyr::select(2,4:7) %>%
+          set_names(c("well", "target", "temperature", "fluorescence", "derivative")) %>%
+          janitor::remove_empty('rows') %>%
+          left_join(ct[, 1:3])
         rv$mc <- mc
       }
 
@@ -125,48 +128,44 @@ new_path <- paste0(input$userfile$datapath, ".xlsx")
       }
       
       # calculate dCT
-      ref_target <- ct_filtered %>% 
-        # dplyr::filter(target == 'ACTB') %>% 
+      ref_target <- ct_filtered %>%
         dplyr::filter(target == input$target[1]) %>%
-        dplyr::distinct(sample, mean) %>% 
+        dplyr::distinct(sample, mean) %>%
         dplyr::rename(ref_target_mean=mean)
       d_ct <- ct_filtered %>% 
         left_join(ref_target) %>% 
         mutate(d_ct=ct - ref_target_mean)
       
       # calculate ddCT
-      ref_sample <- d_ct %>% 
-        # dplyr::filter(sample == "1") %>% 
+      ref_sample <- d_ct %>%
         dplyr::filter(sample == input$sample[1]) %>%
         reframe(ref_sample_mean=mean(d_ct, na.rm=T), .by=c(target))
-      dd_ct <- d_ct %>% 
-        left_join(ref_sample) %>% 
-        mutate(dd_ct=d_ct - ref_sample_mean) %>% 
-        mutate(dd_ct_2n=2^dd_ct, 
+      dd_ct <- d_ct %>%
+        left_join(ref_sample) %>%
+        mutate(dd_ct=d_ct - ref_sample_mean) %>%
+        mutate(dd_ct_2n=2^(-dd_ct),
                dd_ct_2n_mean=mean(dd_ct_2n, na.rm=TRUE), .by=c(sample, target)
                )
-      
+
       # norm ref_sample to 1
-      ref_norm_factor <- dd_ct %>% 
-        # dplyr::filter(sample == "1") %>% 
+      ref_norm_factor <- dd_ct %>%
         dplyr::filter(sample == input$sample[1]) %>%
         reframe(norm_factor=mean(dd_ct_2n_mean, na.rm=T), .by=c(target))
-      dd_ct_final <- dd_ct %>% 
-        left_join(ref_norm_factor) %>% 
-        mutate(dd_ct_2n_norm=dd_ct_2n / norm_factor) %>% 
-        dplyr::select(well, sample, target, ct, 
-                      d_ct, dd_ct, dd_ct_2n, dd_ct_2n_norm) #%>% print()
-      
+      dd_ct_final <- dd_ct %>%
+        left_join(ref_norm_factor) %>%
+        mutate(dd_ct_2n_norm=dd_ct_2n / norm_factor) %>%
+        dplyr::select(well, sample, target, ct,
+                      d_ct, dd_ct, dd_ct_2n, dd_ct_2n_norm)
+
       # update data
       rv$result <- dd_ct_final
+    })
 
-      # melting curve
-      if(!is.null(rv$mc)) {
-        mc_filtered <- rv$mc %>%
-          dplyr::filter(sample %in% input$sample, target %in% input$target)
-        # update data
-        rv$mc <- mc_filtered
-      }
+    # Melt curve data filtered by current selections (rv$mc stays pristine)
+    mc_filtered <- reactive({
+      req(rv$mc)
+      if (length(input$sample) == 0 || length(input$target) == 0) return(rv$mc)
+      dplyr::filter(rv$mc, sample %in% input$sample, target %in% input$target)
     })
     
     
@@ -203,19 +202,19 @@ new_path <- paste0(input$userfile$datapath, ".xlsx")
     })
 
     output$plot_mc_1 <- renderPlot({
-      req(rv$mc)
-      
-      ggplot(rv$mc, aes(temperature, derivative, color=target)) +
-        facet_wrap(vars(target), scales="free_y") + 
+      req(mc_filtered())
+
+      ggplot(mc_filtered(), aes(temperature, derivative, color=target)) +
+        facet_wrap(vars(target), scales="free_y") +
         geom_line() +
         theme_minimal() + theme(legend.position="none")
     })
-    
+
     output$plot_mc_2 <- renderPlot({
-      req(rv$mc)
-      
-      ggplot(rv$mc, aes(temperature, derivative, color=target)) +
-        facet_wrap(vars(target, sample), scales="free_y") + 
+      req(mc_filtered())
+
+      ggplot(mc_filtered(), aes(temperature, derivative, color=target)) +
+        facet_wrap(vars(target, sample), scales="free_y") +
         geom_line() +
         theme_minimal() + theme(legend.position="none")
     })
@@ -232,6 +231,7 @@ new_path <- paste0(input$userfile$datapath, ".xlsx")
           str_c("_qpcr_data.xlsx")
       },
       content = function(file) {
+        req(rv$result)
         write_xlsx(rv$result, file)
       })
     

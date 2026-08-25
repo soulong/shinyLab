@@ -1,6 +1,4 @@
 
-# rstudioapi::getActiveDocumentContext()$path |> dirname() |> setwd()
-# rsconnect::writeManifest()
 # Deploy: rsconnect::deployApp()
 
 library(shiny)
@@ -61,12 +59,6 @@ server <- function(input, output, session) {
 }
 
 runApp(shinyApp(ui = ui, server = server))
-
-# # in terminal
-# # Rscript app.R
-# if(sys.nframe() == 0 && !interactive()) {
-#   runApp(shinyApp(ui = ui, server = server)) # , port = PORT, host = HOST, launch.browser = TRUE
-# }
 
 
 

@@ -27,7 +27,7 @@ Or from terminal:
 Rscript app.R
 ```
 
-The app prints the URL it is listening on (e.g. `http://127.0.0.1:8100`); RStudio's "Run App" launches on `http://localhost:5001`. Open that address in your browser.
+The app listens on `http://127.0.0.1:5005` (configured in `app.R`); a browser window opens automatically when launched from RStudio. Open that address in your browser if it does not.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ The app prints the URL it is listening on (e.g. `http://127.0.0.1:8100`); RStudi
 - shiny, shinydashboard, tidyverse (includes ggplot2, dplyr, tidyr, readr, stringr, purrr, tibble, forcats), magrittr, DT, shinyjs, plotly
 
 **Real-time PCR**
-- readxl, writexl, janitor, Hmisc
+- readxl, writexl, janitor
 
 **shRNA / sgRNA**
 - Biostrings, httr, rvest
@@ -50,7 +50,8 @@ The app prints the URL it is listening on (e.g. `http://127.0.0.1:8100`); RStudi
 - synergyfinder, patchwork, writexl, zip
 
 **DSF Analysis**
-- rio, zip, janitor, mgcv, gratia, patchwork, DT, writexl
+- zip, janitor, mgcv, gratia, patchwork, DT, writexl
+- Optional: rcdk (renders 2D chemical structures from SMILES in the Ligand Details view)
 
 **RNA-seq**
 - readxl, writexl, rhandsontable, DESeq2, ashr, corrplot, ggforce, ggrepel, clusterProfiler, msigdbr, enrichplot, future, furrr, matrixStats
@@ -68,8 +69,8 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
 BiocManager::install(c(
   "shiny", "shinydashboard", "tidyverse", "magrittr", "patchwork",
-  "writexl", "readxl", "janitor", "Hmisc", "httr", "rvest",
-  "rio", "zip", "mgcv", "gratia", "DT", "shinyjs", "plotly",
+  "writexl", "readxl", "janitor", "httr", "rvest",
+  "zip", "mgcv", "gratia", "DT", "shinyjs", "plotly",
   "corrplot", "ggforce", "ggrepel", "future", "furrr", "matrixStats",
   "Biostrings", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db",
   "DESeq2", "ashr", "clusterProfiler", "msigdbr", "enrichplot",

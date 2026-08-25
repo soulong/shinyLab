@@ -1,41 +1,6 @@
 # shinyBioTools - Utility Functions
 
 # =============================================================================
-# OS Detection
-# =============================================================================
-
-#' Detect Operating System
-#'
-#' @description Detects the current operating system, including special
-#'   handling for Windows Subsystem for Linux (WSL).
-#'
-#' @return Character string indicating the OS type:
-#'   \itemize{
-#'     \item "wsl" - Windows Subsystem for Linux
-#'     \item "windows" - Native Windows
-#'     \item "linux" - Native Linux
-#'     \item Other - Other OS name from Sys.info()
-#'   }
-#'
-#' @examples
-#' detect_os()
-#'
-#' @export
-detect_os <- function() {
-  sysinfo <- Sys.info()
-  if (grepl("microsoft|Microsoft", sysinfo["release"], ignore.case = TRUE)) {
-    return("wsl")
-  }
-  if (.Platform$OS.type == "windows") {
-    return("windows")
-  }
-  if (sysinfo["sysname"] == "Linux") {
-    return("linux")
-  }
-  return(sysinfo["sysname"])
-}
-
-# =============================================================================
 # Well Position Helpers
 # =============================================================================
 

@@ -86,6 +86,15 @@ sgRNAServer <- function(id) {
       sequences <- trimws(toupper(sequences))
       prefixes <- trimws(prefixes)
 
+      empty_seq <- is.na(sequences) | sequences == ""
+      if (any(empty_seq)) {
+        showNotification(paste("Lines without a sequence skipped:",
+                               paste(prefixes[empty_seq], collapse = ", ")),
+                         type = "warning", duration = 10)
+        prefixes <- prefixes[!empty_seq]
+        sequences <- sequences[!empty_seq]
+      }
+
       invalid <- !grepl("^[ATCG]+$", sequences)
       if (any(invalid)) {
         msg <- paste("Invalid sequences (non-ATCG) skipped:",

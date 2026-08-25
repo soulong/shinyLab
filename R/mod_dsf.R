@@ -5,11 +5,9 @@ library(patchwork)
 library(mgcv)
 library(gratia)
 # library(rcdk)
-library(rio)
 library(DT)
 library(zip)
 library(janitor)
-options(rio.import.class='tbl')
 
 # =============================================================================
 # Plot Helper Functions
@@ -57,6 +55,11 @@ build_curve_plot <- function(data, ref_ligand_val, color_by, facet_vars,
              ref_ligand_val %in% data$ligand
   is_valid_color <- !is.null(color_by) && color_by != "" && 
                     color_by %in% names(data) && color_by != "ligand"
+  if (!is_valid_color && !is.null(color_by) && color_by != "" &&
+      !color_by %in% c(names(data), "ligand")) {
+    warning(sprintf("Color variable '%s' not found in curve data; falling back to single color.", color_by),
+            call. = FALSE)
+  }
   is_color_numeric <- if (is_valid_color) is.numeric(data[[color_by]]) else FALSE
   
   geom_fn <- if (is_derivative) geom_line else geom_path
@@ -415,14 +418,6 @@ dsfServer <- function(id) {
             mutate(temperature = as.numeric(temperature),
                    fluorescence = as.numeric(fluorescence))
           
-          incProgress(0.25, detail = "Merging with raw data...")
-          mc_tidy <- mc %>%
-            inner_join(merged %>% dplyr::select(plate, well, target, ligand) %>% distinct(),
-                      by = c("plate", "well"))
-          
-          incProgress(0.3, detail = "Computing derivatives...")
-          derivatives <- compute_derivatives(mc_tidy)
-          
           # Auto-detect reference values
           ligand_choices <- sort(unique(meta$ligand))
           ref_ligand_default <- if (used_fallback) {
@@ -446,6 +441,17 @@ dsfServer <- function(id) {
           } else {
             merged_with_dtm <- merged %>% mutate(d_tm = NA_real_)
           }
+          
+          incProgress(0.25, detail = "Merging with raw data...")
+          annot <- merged_with_dtm %>%
+            dplyr::select(-any_of(c("reading", "temperature", "fluorescence"))) %>%
+            distinct()
+          mc_tidy <- mc %>%
+            inner_join(annot, by = c("plate", "well"))
+          
+          incProgress(0.3, detail = "Computing derivatives...")
+          derivatives <- compute_derivatives(mc_tidy) %>%
+            left_join(annot, by = c("plate", "well", "target", "ligand"))
           
           incProgress(0.35, detail = "Done!")
           
@@ -945,16 +951,13 @@ dsfServer <- function(id) {
             
             incProgress(0.1, detail = "Creating zip...")
             pdf_files <- list.files(plot_dir, pattern = "\\.pdf$", full.names = FALSE)
-            
+
             if (length(pdf_files) == 0) {
               showNotification("No plots were generated", type = "error", duration = 10)
               return(NULL)
             }
-            
-            old_wd <- getwd()
-            setwd(plot_dir)
-            on.exit(setwd(old_wd), add = TRUE)
-            zip::zip(zipfile = file, files = pdf_files)
+
+            zip::zip(zipfile = file, files = pdf_files, root = plot_dir)
           })
           
         }, error = function(e) {
