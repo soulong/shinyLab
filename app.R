@@ -1,4 +1,6 @@
 
+# rstudioapi::getActiveDocumentContext()$path |> dirname() |> setwd()
+# rsconnect::writeManifest()
 # Deploy: rsconnect::deployApp()
 
 library(shiny)
