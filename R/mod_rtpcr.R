@@ -92,7 +92,8 @@ rtPCRServer <- function(id) {
       ct <- ct %>%
         dplyr::select(2,4,5,13) %>%
         set_names(c("well", "sample", "target", "ct")) %>%
-        janitor::remove_empty('rows')
+        janitor::remove_empty('rows') %>%
+        mutate(ct = suppressWarnings(as.numeric(ct)))
       rv$ct <- ct
 
       # deal with MC data

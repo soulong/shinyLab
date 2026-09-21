@@ -136,54 +136,54 @@ run_synergyfinder <- function(data,
 
   writexl::write_xlsx(res, file.path(save_dir, 'result_synergyfinder.xlsx'))
 
-  # Plot dose response
-  suppressWarnings(
-    PlotDoseResponse(
-      data = res,
-      block_ids = unique(res$drug_pairs$block_id),
-      drugs = c(1, 2),
-      save_file = TRUE,
-      file_type = "pdf",
-      save_dir = save_dir
+  blocks <- unique(res$drug_pairs$block_id)
+
+  for (block in blocks) {
+    # Dose-response matrix (synergyfinder 3.2 draws on call - capture into PDF)
+    pdf(file.path(save_dir, str_glue('DoseResponse_{block}.pdf')), width = 12,
+        height = 6)
+    p_dr <- tryCatch(
+      PlotDoseResponse(data = res, block_ids = block, drugs = c(1, 2),
+                       save_file = FALSE),
+      error = function(e) NULL
     )
-  )
+    dev.off()
 
-  # Generate plots for each block
-  for (block in unique(res$drug_pairs$block_id)) {
-    # Plot synergy
-    p1 <- map(c("ZIP", "HSA", "Bliss", "Loewe"),
-              ~ PlotSynergy(
-                data = res,
-                type = "2D",
-                method = .x,
-                block_ids = block,
-                drugs = c(1, 2),
-                dynamic = FALSE,
-                save_file = FALSE
-              ))
-
+    # Plot synergy (display = FALSE returns ggplot objects we can save)
     drug1 <- res$drug_pairs %>% filter(block_id == block) %>% pull(drug1) %>% .[1]
     drug2 <- res$drug_pairs %>% filter(block_id == block) %>% pull(drug2) %>% .[1]
 
+    p1 <- map(c("ZIP", "HSA", "Bliss", "Loewe"), ~ PlotSynergy(
+      data = res,
+      type = "2D",
+      method = .x,
+      block_ids = block,
+      drugs = c(1, 2),
+      dynamic = FALSE,
+      display = FALSE,
+      save_file = FALSE
+    ))
     pdf(file.path(save_dir, str_glue('{drug1}_{drug2}_Synergy_{block}.pdf')),
         width = 6, height = 5)
-    print(p1)
+    invisible(map(p1, print))
     dev.off()
 
-    # Plot 2D surface
-    p2 <- map(c("ZIP_synergy", "HSA_synergy", "Bliss_synergy", "Loewe_synergy"),
-              ~ Plot2DrugSurface(
-                data = res,
-                plot_block = block,
-                plot_value = .x,
-                summary_statistic = 'mean',
-                dynamic = FALSE,
-                interpolate_len = 3
-              ))
-
+    # Plot 2D surface (static surface plots draw to the open device directly)
     pdf(file.path(save_dir, str_glue('{drug1}_{drug2}_Surface_{block}.pdf')),
         width = 6, height = 6)
-    print(p2)
+    invisible(pmap(list(
+      c("ZIP_synergy", "HSA_synergy", "Bliss_synergy", "Loewe_synergy"),
+      c("ZIP", "HSA", "Bliss", "Loewe")
+    ), function(value, method) {
+      Plot2DrugSurface(
+        data = res,
+        plot_block = block,
+        plot_value = value,
+        summary_statistic = 'mean',
+        dynamic = FALSE,
+        interpolate_len = 3
+      )
+    }))
     dev.off()
 
     # Synergy barometer (skip when IC50 fitting failed for either drug)
@@ -200,32 +200,30 @@ run_synergyfinder <- function(data,
 
     if (!is.na(ic50_1) && !is.na(ic50_2) &&
         length(c_1) == 1 && length(c_2) == 1) {
+      pdf(file.path(save_dir, str_glue('{drug1}_{drug2}_Barometer_{block}.pdf')),
+          width = 6, height = 6)
       p3 <- PlotBarometer(
         data = res,
         plot_block = block,
         plot_concs = c(c_1, c_2),
         needle_text_offset = -2.5
       )
-
-      ggsave(file.path(save_dir, str_glue('{drug1}_{drug2}_Barometer_{block}.pdf')),
-             p3, height = 6, width = 6)
+      if (inherits(p3, "ggplot")) print(p3)
+      dev.off()
     }
   }
 
-  # Sensitivity and synergy plot
-  p <- map(c("ZIP", "HSA", "Bliss", "Loewe"),
-           ~ PlotSensitivitySynergy(
-             data = res,
-             plot_synergy = .x,
-             point_size = 3,
-             label_size = 8,
-             show_labels = TRUE,
-             dynamic = FALSE
-           ))
-
-  ggsave(file.path(save_dir, 'synergy_sensitivity.pdf'),
-         wrap_plots(p, nrow = 1),
-         height = 4, width = 16)
+  # Sensitivity and synergy plot (3.2 draws to the open device directly)
+  pdf(file.path(save_dir, 'synergy_sensitivity.pdf'), width = 16, height = 4)
+  invisible(map(c("ZIP", "HSA", "Bliss", "Loewe"), ~ PlotSensitivitySynergy(
+    data = res,
+    plot_synergy = .x,
+    point_size = 3,
+    label_size = 8,
+    show_labels = TRUE,
+    dynamic = FALSE
+  )))
+  dev.off()
 
   return(res)
 }

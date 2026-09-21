@@ -605,6 +605,14 @@ rnaseq_qc_server <- function(id, counts, coldata) {
     function(input, output, session) {
       ns <- session$ns
 
+      # vst() errors on small gene counts; fall back to the classical VST
+      vst_transform <- function(dds_obj) {
+        tryCatch(
+          DESeq2::vst(dds_obj, blind = FALSE),
+          error = function(e) DESeq2::varianceStabilizingTransformation(dds_obj, blind = FALSE)
+        )
+      }
+
       # ----- run DESeq2 -----
       dds <- eventReactive(input$apply, {
         req(counts(), coldata())
@@ -629,7 +637,7 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       mat <- reactive({
         req(dds())
         if (input$calculate_source == "vst") {
-          assay(DESeq2::vst(dds(), blind = FALSE))
+          assay(vst_transform(dds()))
         } else {
           DESeq2::counts(dds(), normalized = TRUE)
         }
@@ -638,7 +646,7 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       # ----- PCA -----
       pca_p <- reactive({
         req(dds())
-        pcaData <- plotPCA(DESeq2::vst(dds()), intgroup = c("condition"), returnData = TRUE)
+        pcaData <- plotPCA(vst_transform(dds()), intgroup = c("condition"), returnData = TRUE)
         percentVar <- round(100 * attr(pcaData, "percentVar"))
         p <- ggplot(pcaData, aes(PC1, PC2, color = condition)) +
           geom_point(size = 2) +
