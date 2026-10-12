@@ -18,30 +18,29 @@ sgRNAUI <- function(id) {
   fluidRow(
     box(title = "Settings", width = 3, status = "primary", solidHeader = TRUE,
       textAreaInput(ns("input"), "sgRNA List",
-        placeholder = "Paste sgRNA sequences (one per line)\nTwo-column: Name<TAB>Sequence\nOne-column: sequence only, auto-numbered\n\nExample:\ngene1\tCACCGGAGGTCTCCTAGCA\nGATCCGATCGAACTTCGAC",
-        height = "200px"),
-      p(icon("info-circle"), " Default prefix/suffix are for LentiCRISPRv2. Adjust as needed.",
-        style = "font-size: 12px; color: #888;"),
-      hr(),
-      h5("Forward Primer (5' -> 3': prefix-sgRNA-suffix)"),
+        placeholder = "Name<TAB>Sequence - one per line\n(sequence only also works, auto-numbered)",
+        height = "150px"),
+      helpText("Two-column (name + sequence) or one-column input.",
+               hint_tip("Lines containing a TAB are read as 'name<TAB>sequence'; lines without a TAB are auto-numbered. Sequences must contain A/T/C/G only - anything else is skipped with a warning. The name becomes the primer-pair prefix (e.g. gene1_f / gene1_r).")),
+      h5("Forward oligo (5' -> 3')", hint_tip("5' prefix + sgRNA + 3' suffix. The defaults (caccG overhang) fit LentiCRISPRv2 BsmBI cloning - adjust for your vector.")),
       fluidRow(
         column(6, textInput(ns("f5"), "5' prefix", value = "caccG")),
         column(6, textInput(ns("f3"), "3' suffix", value = ""))
       ),
-      h5("Reverse Primer (5' -> 3': prefix-revComp-suffix)"),
+      h5("Reverse oligo (5' -> 3')", hint_tip("5' prefix + reverse complement of the sgRNA + 3' suffix.")),
       fluidRow(
         column(6, textInput(ns("r5"), "5' prefix", value = "aaac")),
         column(6, textInput(ns("r3"), "3' suffix", value = "C"))
       ),
-      hr(),
       actionButton(ns("design"), "Design Primers", icon = icon("magic"),
-                   class = "btn-default"),
-      br(), br(),
-      downloadButton(ns("download"), "Download")
+                   class = "btn-default",
+                   title = "Build the cloning oligos for every valid sgRNA."),
+      downloadButton(ns("download"), "Primers (xlsx)", icon = icon("table"),
+                     title = "Primer pairs with their template sequences, one row per oligo.")
     ),
     column(9,
       box(title = "Designed Primers", width = NULL, status = "primary", solidHeader = TRUE,
-        tableOutput(ns("primer_table"))
+        DT::dataTableOutput(ns("primer_table"))
       )
     )
   )
@@ -121,21 +120,23 @@ sgRNAServer <- function(id) {
 
       rv$primers <- data.frame(
         ID = paste0(rep(prefixes, each = 2), c("_f", "_r")),
+        Template = as.vector(rbind(sequences, rc)),
         Primer = as.vector(rbind(f_primers, r_primers)),
         stringsAsFactors = FALSE
       )
     })
 
-    output$primer_table <- renderTable({
+    output$primer_table <- DT::renderDataTable({
       req(rv$primers)
-      rv$primers
-    }, striped = TRUE, hover = TRUE)
+      DT::datatable(rv$primers, rownames = FALSE, options = dt_table_options()) %>%
+        DT::formatStyle(columns = c("Template", "Primer"), fontFamily = "Consolas, monospace")
+    })
 
     output$download <- downloadHandler(
-      filename = function() paste0("sgRNA_primers_", Sys.Date(), ".xlsx"),
+      filename = function() paste0("sgRNA_", Sys.Date(), "_primers.xlsx"),
       content = function(file) {
         req(rv$primers)
-        writexl::write_xlsx(rv$primers, file)
+        write_xlsx_sheets(list(Primers = rv$primers), file)
       }
     )
   })

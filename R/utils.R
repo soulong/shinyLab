@@ -1,6 +1,85 @@
 # shinyBioTools - Utility Functions
 
 # =============================================================================
+# Shared Download / Plot Export Helpers
+# =============================================================================
+
+#' Write a named list of data frames to a multi-sheet Excel file
+#'
+#' Drops NULL / zero-row sheets, and sanitizes sheet names to Excel's 31-char
+#' limit with guaranteed uniqueness. An empty `sheets` list raises an error so
+#' callers never produce a corrupt file.
+#'
+#' @param sheets Named list of data frames (NULL entries are skipped).
+#' @param file Target .xlsx path.
+write_xlsx_sheets <- function(sheets, file) {
+  # purrr:: explicitly: XVector (via Biostrings) masks compact in the search path
+  sheets <- purrr::compact(sheets)
+  sheets <- purrr::keep(sheets, ~ is.data.frame(.x) && nrow(.x) > 0)
+  if (length(sheets) == 0) stop("No data to export (all sheets were empty)")
+
+  names(sheets) <- names(sheets) %>%
+    map_chr(~ if (is.null(.x) || !nzchar(.x)) "Sheet" else as.character(.x)) %>%
+    substr(1, 31)
+  dup <- duplicated(names(sheets))
+  if (any(dup)) names(sheets)[dup] <- paste0(names(sheets)[dup], "_", seq_len(sum(dup)))
+
+  writexl::write_xlsx(sheets, file)
+}
+
+#' Draw a plot object of any supported type onto the current device
+#'
+#' Handles ggplot, patchwork, gtable/grob (e.g. the ggplot2 heatmap grob),
+#' recorded plots (synergyfinder), and plain lists of those.
+draw_plot_object <- function(plot) {
+  if (is.list(plot) && !inherits(plot, c("ggplot", "gg", "patchwork", "gtable"))) {
+    return(invisible(lapply(plot, draw_plot_object)))
+  }
+  if (inherits(plot, c("ggplot", "patchwork", "gg"))) print(plot)
+  else if (inherits(plot, "recordedplot")) grDevices::replayPlot(plot)
+  else if (inherits(plot, c("gtable", "grob", "gTree"))) grid::grid.draw(plot)
+  else if (is.function(plot)) plot()
+  else if (!is.null(plot)) print(plot)
+}
+
+#' Save a plot object as a vector PDF (cairo when available)
+#'
+#' @param plot A ggplot / patchwork / gtable / grob / recorded plot / list.
+#' @param file Target .pdf path.
+#' @param width,height Page size in inches.
+export_plot_pdf <- function(plot, file, width = 10, height = 8) {
+  dev_fn <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
+  dev_fn(file, width = width, height = height)
+  tryCatch(draw_plot_object(plot), finally = grDevices::dev.off())
+  invisible(file)
+}
+
+#' Consistent DT options for data tables across modules
+dt_table_options <- function(pageLength = 25) {
+  list(pageLength = pageLength, lengthMenu = c(10, 25, 50, 100),
+       scrollX = TRUE, searching = TRUE)
+}
+
+#' Inline hover hint
+#'
+#' A small info icon with a Bootstrap tooltip (delegated via app.R, so it also
+#' works inside renderUI output). Use for explanations too long to show inline;
+#' the native `title` attribute is the no-JS fallback.
+#'
+#' @param text Hint text shown on hover.
+#' @param placement Tooltip position: "top", "bottom", "left" or "right".
+hint_tip <- function(text, placement = "top") {
+  tags$span(
+    icon("info-circle"),
+    title = text,
+    `data-toggle` = "tooltip",
+    `data-placement` = placement,
+    `data-container` = "body",
+    style = "color:#3c8dbc; cursor:help; margin-left:4px; font-size:13px;"
+  )
+}
+
+# =============================================================================
 # Well Position Helpers
 # =============================================================================
 

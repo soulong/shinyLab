@@ -9,7 +9,6 @@ library(readxl)
 library(rhandsontable)
 library(DT)
 library(shinyjs)
-library(plotly)
 library(DESeq2)
 library(corrplot)
 library(ggforce)
@@ -26,8 +25,9 @@ library(furrr)
 
 rnaseq_file_accept <- c(".csv", ".xlsx")
 
-# first 4 metadata columns are reserved: sample_name, batch, include, ...
-rnaseq_metadata_fixed_cols <- 1:4
+# metadata columns reserved for bookkeeping; they are never offered as design
+# factors (matched by name, so column order in the uploaded file is free)
+rnaseq_metadata_reserved_cols <- c("sample_name", "batch", "include")
 
 # worker pool for parallel enrichment (multisession), set up once at startup
 rnaseq_n_workers <- function() {
@@ -169,10 +169,14 @@ rnaseq_ora_empty <- function() {
 
 
 #' Run enricher (ORA) for one gene list, returning a direction-tagged result tibble
-rnaseq_ora_direction <- function(genes, genesets, pval_cutoff, min_setSize, max_setSize, direction) {
+#'
+#' @param universe background genes actually tested (all genes in the Wald
+#'   results). Without it, enricher would fall back to every gene in the
+#'   gene-set table, which biases the enrichment p-values.
+rnaseq_ora_direction <- function(genes, universe, genesets, pval_cutoff, min_setSize, max_setSize, direction) {
   if (length(genes) == 0) return(rnaseq_ora_empty())
   res <- suppressWarnings(tryCatch({
-    x <- enricher(genes, pvalueCutoff = pval_cutoff, qvalueCutoff = 0.7,
+    x <- enricher(genes, universe = universe, pvalueCutoff = pval_cutoff, qvalueCutoff = 0.7,
                   minGSSize = min_setSize, maxGSSize = max_setSize,
                   TERM2GENE = genesets)
     x@result
@@ -186,15 +190,16 @@ rnaseq_ora_direction <- function(genes, genesets, pval_cutoff, min_setSize, max_
 #' Run ORA (enricher) for all comparisons, up- and down-regulated genes separately
 #'
 #' @param results_sig named list of significant wald result tibbles
+#' @param universe character vector of all tested genes (ORA background)
 #' @param genesets TERM2GENE tibble from rnaseq_msigdb_geneset
 #' @return named list of result tibbles with a direction column
-rnaseq_run_ora <- function(results_sig, genesets, pval_cutoff, min_setSize, max_setSize) {
+rnaseq_run_ora <- function(results_sig, universe, genesets, pval_cutoff, min_setSize, max_setSize) {
   out <- furrr::future_map(results_sig, function(res) {
     up <- dplyr::filter(res, log2FoldChange > 0) %>% pull(gene_name)
     down <- dplyr::filter(res, log2FoldChange < 0) %>% pull(gene_name)
     bind_rows(
-      rnaseq_ora_direction(up, genesets, pval_cutoff, min_setSize, max_setSize, "Up"),
-      rnaseq_ora_direction(down, genesets, pval_cutoff, min_setSize, max_setSize, "Down")
+      rnaseq_ora_direction(up, universe, genesets, pval_cutoff, min_setSize, max_setSize, "Up"),
+      rnaseq_ora_direction(down, universe, genesets, pval_cutoff, min_setSize, max_setSize, "Down")
     )
   }, .options = furrr::furrr_options(seed = TRUE))
   names(out) <- names(results_sig)
@@ -243,8 +248,10 @@ rnaseq_plot_volcano <- function(res,
   # take sig genes
   df.sig <- filter(df, padj < padj_thred, abs(log2FoldChange) > log2(fc_thred)) %>%
     mutate(direction = if_else(log2FoldChange > 0, "up", "down"))
-  # sample un-sig genes, to reduce rendering points
-  df.unsig <- filter(df, padj >= padj_thred) %>%
+  # sample the non-significant background cloud: the complement of df.sig, so
+  # padj-significant but sub-threshold-LFC genes still render (as "ns")
+  # instead of disappearing from the plot
+  df.unsig <- filter(df, !(padj < padj_thred & abs(log2FoldChange) > log2(fc_thred))) %>%
     slice_sample(n = ns_resampling) %>%
     mutate(direction = "ns")
   # merge sig and un-sig
@@ -256,8 +263,7 @@ rnaseq_plot_volcano <- function(res,
     df.merge <- mutate(df.merge, `-log10(padj)` = if_else(`-log10(padj)` > ylims[2], ylims[2],
                                                           if_else(`-log10(padj)` < ylims[1], ylims[1], `-log10(padj)`)))
   # plot
-  plot <- ggplot(df.merge, aes(log2FoldChange, `-log10(padj)`, fill = direction, group = 1,
-                               text = paste("baseMean: ", baseMean, "</br>gene_name: ", gene_name))) +
+  plot <- ggplot(df.merge, aes(log2FoldChange, `-log10(padj)`, fill = direction)) +
     geom_point(size = size, alpha = alpha, shape = 21, color = "transparent", show.legend = legend) +
     scale_fill_manual(values = c(down = color[1], ns = color[2], up = color[3])) +
     geom_vline(xintercept = c(-log2(fc_thred), log2(fc_thred)), linetype = "dashed", color = "grey50") +
@@ -407,14 +413,18 @@ rnaseq_upload_ui <- function(id) {
   fluidRow(
     box(status = "primary", solidHeader = TRUE, width = 12,
         fileInput(ns("counts_file"),
-                  paste0("Gene expression raw counts (", paste0(rnaseq_file_accept, collapse = "/"), ")"),
+                  tagList("Raw counts (.csv / .xlsx)",
+                          hint_tip("Gene x sample count matrix. Must include a 'gene_name' column; a 'gene_id' column is used as a fallback name for genes whose symbol is empty.")),
                   accept = rnaseq_file_accept),
         uiOutput(ns("counts_sheet_ui")),
         fileInput(ns("metadata_file"),
-                  paste0("Sample info metadata (required, ", paste0(rnaseq_file_accept, collapse = "/"), ")"),
+                  tagList("Sample metadata (.csv / .xlsx)",
+                          hint_tip("Required columns: sample_name, batch, include. Any other column can be ticked as a design factor (e.g. treatment); the condition tested is the chosen factors pasted together. Rows with include = yes are analysed.")),
                   accept = rnaseq_file_accept),
         uiOutput(ns("metadata_sheet_ui")),
-        shinyjs::disabled(actionButton(ns("upload"), "Upload"))
+        shinyjs::disabled(actionButton(ns("upload"), "Upload",
+                                       title = "Load both files; the metadata table becomes editable below.")),
+        helpText("Upload both files, edit the metadata if needed, then continue with step 2.")
     ),
     uiOutput(ns("upload_tables_ui"))
   )
@@ -487,10 +497,13 @@ rnaseq_upload_server <- function(id) {
       # ----- edit metadata -----
       output$metadata_table <- renderRHandsontable({
         req(metadata())
-        rhandsontable(metadata(), useTypes = TRUE) %>%
+        tbl <- rhandsontable(metadata(), useTypes = TRUE) %>%
           hot_table(highlightCol = TRUE, highlightRow = TRUE, stretchH = "all") %>%
-          hot_cols(columnSorting = TRUE) %>%
-          hot_col(1:2, readOnly = TRUE)
+          hot_cols(columnSorting = TRUE)
+        for (nm in intersect(c("sample_name", "batch"), colnames(metadata()))) {
+          tbl <- hot_col(tbl, nm, readOnly = TRUE)
+        }
+        tbl
       })
 
       metadata_final <- reactive({
@@ -512,10 +525,17 @@ rnaseq_upload_server <- function(id) {
           return(helpText("Metadata is missing required column(s): ",
                           paste(setdiff(required, cn), collapse = ", ")))
         }
+        factor_cols <- setdiff(cn, rnaseq_metadata_reserved_cols)
+        if (length(factor_cols) == 0) {
+          showNotification(
+            "Metadata has no column left for a design factor - add a condition column (e.g. treatment) besides sample_name, batch and include.",
+            type = "error", duration = 15)
+          return(helpText("No design factor available: add a condition column (e.g. treatment) besides sample_name, batch and include."))
+        }
         checkboxGroupInput(ns("choose_factors"), label = NULL, inline = TRUE,
-                           choiceNames = cn[-rnaseq_metadata_fixed_cols],
-                           choiceValues = cn[-rnaseq_metadata_fixed_cols],
-                           selected = cn[-rnaseq_metadata_fixed_cols])
+                           choiceNames = factor_cols,
+                           choiceValues = factor_cols,
+                           selected = factor_cols)
       })
 
       coldata <- reactive({
@@ -572,24 +592,31 @@ rnaseq_qc_ui <- function(id) {
   tagList(
     fluidRow(
       box(width = 12, status = "primary", solidHeader = TRUE,
+          title = tagList("QC & DESeq2",
+                          hint_tip("Run DESeq2 once here; the PCA, correlation and heatmap use variance-stabilised values, and the later tabs reuse the fitted model.")),
           fluidRow(
             column(2,
-                   radioButtons(ns("filter_symbol"), "Remove empty symbols",
+                   radioButtons(ns("filter_symbol"), tagList("Empty symbols",
+                                hint_tip("Remove genes whose gene_name is empty, or backfill them from gene_id.")),
                                 selected = "true", inline = TRUE, choices = c(true = "true", false = "false"))
             ),
             column(2,
-                   numericInput(ns("min_counts"), "Counts threshold", value = 10, min = 1, step = 1)
+                   numericInput(ns("min_counts"), tagList("Counts threshold",
+                                 hint_tip("Genes with mean count below this value are removed before the test.")),
+                                 value = 10, min = 1, step = 1)
             ),
             column(2,
                    radioButtons(ns("pca_show_label"), "Labels on PCA",
                                 selected = "true", inline = TRUE, choices = c(true = "true", false = "false"))
             ),
             column(2,
-                   radioButtons(ns("calculate_source"), "Calculating use",
+                   radioButtons(ns("calculate_source"), tagList("QC values",
+                                hint_tip("Values behind the QC plots: vst = variance-stabilising transform (recommended); counts_norm = DESeq2 size-factor-normalised counts.")),
                                 selected = "vst", inline = TRUE, choices = c(vst = "vst", counts_norm = "counts_norm"))
             ),
             column(4, align = "center", br(),
-                   actionButton(ns("apply"), "Run DESeq2", class = "btn-default")
+                   actionButton(ns("apply"), "Run DESeq2", class = "btn-default",
+                                title = "Fit the DESeq2 model (batch is included as a covariate when it has more than one level).")
             )
           )
       )
@@ -652,21 +679,25 @@ rnaseq_qc_server <- function(id, counts, coldata) {
           geom_point(size = 2) +
           xlab(paste0("PC1: ", percentVar[1], "% variance")) +
           ylab(paste0("PC2: ", percentVar[2], "% variance")) +
-          geom_mark_ellipse(aes(fill = condition, color = condition), expand = unit(1, "mm")) +
+          # dashed ellipses share the point colour scale
+          stat_ellipse(aes(color = condition), level = 0.9, linetype = 2) +
           coord_fixed() +
           theme_bw(16) +
           theme(legend.position = "top")
-        if (as.logical(input$pca_show_label)) p <- p + geom_text_repel(aes(label = name))
+        if (as.logical(input$pca_show_label)) p <- p + geom_text_repel(aes(label = name), show.legend = FALSE)
         p
       })
 
-      output$pca_plot <- renderPlot(pca_p())
+      output$pca_plot <- renderPlot({
+        req(pca_p())
+        pca_p()
+      }, res = 96)
 
       output$dl_pca <- downloadHandler(
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_pca.pdf"),
         content = function(file) {
           req(pca_p())
-          ggsave(file, pca_p(), width = 7, height = 6, device = pdf)
+          export_plot_pdf(pca_p(), file, width = 7, height = 6)
         })
 
       # ----- sample correlation -----
@@ -684,11 +715,8 @@ rnaseq_qc_server <- function(id, counts, coldata) {
       output$dl_cor <- downloadHandler(
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_correlation.pdf"),
         content = function(file) {
-          req(cor_plot_fn())
-          pdf(file, width = 7, height = 7)
-          on.exit(if (dev.cur() > 1) dev.off(), add = TRUE)
-          cor_plot_fn()()
-          dev.off()
+          req(mat())
+          export_plot_pdf(cor_plot_fn(), file, width = 7, height = 7)
         })
 
       # ----- top variable genes heatmap -----
@@ -715,7 +743,7 @@ rnaseq_qc_server <- function(id, counts, coldata) {
         filename = function() paste0(format(Sys.Date(), "%Y-%m-%d"), "_variable_genes_heatmap.pdf"),
         content = function(file) {
           req(top_var_p())
-          ggsave(file, top_var_p(), width = 8, height = 10, device = pdf)
+          export_plot_pdf(top_var_p(), file, width = 8, height = 10)
         })
 
       # ----- QC result boxes (hidden until DESeq2 has run) -----
@@ -725,18 +753,18 @@ rnaseq_qc_server <- function(id, counts, coldata) {
           box(width = 6, status = "primary", solidHeader = TRUE,
               div(style = "position:relative",
                   tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                           downloadButton(ns("dl_pca"), label = NULL, icon = icon("download"), class = "btn-xs")),
-                  plotOutput(ns("pca_plot"))),
+                           downloadButton(ns("dl_pca"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download PCA plot (PDF)")),
+                  plotOutput(ns("pca_plot"), height = "400px")),
               br(),
               div(style = "position:relative",
                   tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                           downloadButton(ns("dl_cor"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                           downloadButton(ns("dl_cor"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download sample-correlation plot (PDF)")),
                   plotOutput(ns("cor_plot")))
           ),
           box(width = 6, status = "primary", solidHeader = TRUE,
               div(style = "position:relative",
                   tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                           downloadButton(ns("dl_topvar"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                           downloadButton(ns("dl_topvar"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download top-variable-genes heatmap (PDF)")),
                   plotOutput(ns("top_var_plot"), height = "815px"))
           )
         )
@@ -757,25 +785,38 @@ rnaseq_dge_ui <- function(id) {
   tagList(
     fluidRow(
       box(width = 12, status = "primary", solidHeader = TRUE,
+          title = tagList("Differential Expression",
+                          hint_tip("Add one or more condition comparisons, run the Wald tests, then browse significant genes and the volcano plot. The thresholds below also drive the volcano cut lines.")),
           fluidRow(
             column(4, align = "left",
-                   numericInput(ns("baseMean_threshold"), "baseMean", 100, 1, Inf, width = "100%")
+                   numericInput(ns("baseMean_threshold"), tagList("Min baseMean",
+                                hint_tip("Keep genes with DESeq2 baseMean above this value.")),
+                                100, 1, Inf, width = "100%")
             ),
             column(4, align = "left",
-                   numericInput(ns("fc_threshold"), "FoldChange", 1.5, 1, Inf, width = "100%")
+                   numericInput(ns("fc_threshold"), tagList("Min fold change",
+                                hint_tip("Absolute fold-change cut-off for calling a gene up/down.")),
+                                1.5, 1, Inf, width = "100%")
             ),
             column(4, align = "left",
-                   numericInput(ns("padj_threshold"), "Adjust.pvalue", 0.05, 0, Inf, width = "100%")
+                   numericInput(ns("padj_threshold"), tagList("Max adjusted p",
+                                hint_tip("Benjamini-Hochberg adjusted p-value cut-off.")),
+                                0.05, 0, Inf, width = "100%")
             )
           ),
           fluidRow(
             column(12,
                    div(id = ns("compare_container")),
                    fluidRow(
-                     column(3, align = "center",
-                            actionButton(ns("add_compare"), "Add new comparison")),
-                     column(3, align = "center",
-                            actionButton(ns("apply"), "Get compare result", class = "btn-default"))
+                     column(2, align = "center",
+                            actionButton(ns("add_compare"), "Add Comparison",
+                                         title = "Add a contrast-vs-control row; one per comparison.")),
+                     column(2, align = "center",
+                            actionButton(ns("apply"), "Run Comparisons", class = "btn-default",
+                                         title = "Wald-test every comparison; fold changes are shrunken with ashr.")),
+                     column(4, align = "center",
+                            downloadButton(ns("dl_dge_xlsx"), "Download Results (xlsx)", icon = icon("table"),
+                                           title = "Full Wald results (all genes) for every comparison, one sheet each."))
                    )
             )
           )
@@ -813,16 +854,16 @@ rnaseq_dge_server <- function(id, dds) {
                  ui = fluidRow(
                    div(id = ns(paste0("compare_insertUI_", n_now)),
                        column(5,
-                              selectInput(ns(paste0("compare_contrast_", n_now)), NULL,
+                              selectInput(ns(paste0("compare_contrast_", n_now)), "Contrast (of interest)",
                                           conditions, selected = conditions[2])
                        ),
                        column(5,
-                              selectInput(ns(paste0("compare_control_", n_now)), NULL,
+                              selectInput(ns(paste0("compare_control_", n_now)), "Control (reference)",
                                           conditions, selected = conditions[1])
                        ),
                        column(2,
-                              actionButton(ns(paste0("remove_compare_", n_now)), "Remove")
-                       )
+                              actionButton(ns(paste0("remove_compare_", n_now)), "Remove",
+                                           title = "Remove this comparison row."))
                    )
                  )
         )
@@ -842,7 +883,10 @@ rnaseq_dge_server <- function(id, dds) {
       # ----- Wald test results -----
       results <- eventReactive(input$apply, {
         req(dds())
-        if (length(counter()) == 0) validate("Add at least one comparison first")
+        if (length(counter()) == 0) {
+          showNotification("Add at least one comparison first", type = "warning", duration = 6)
+          return(NULL)
+        }
 
         compare_list <- purrr::map(counter(), function(i) {
           c(input[[paste0("compare_contrast_", i)]], input[[paste0("compare_control_", i)]])
@@ -853,7 +897,10 @@ rnaseq_dge_server <- function(id, dds) {
                            type = "warning", duration = 8)
           compare_list <- compare_list[!bad]
         }
-        if (length(compare_list) == 0) validate("No valid comparisons selected")
+        if (length(compare_list) == 0) {
+          showNotification("No valid comparisons selected", type = "warning", duration = 6)
+          return(NULL)
+        }
 
         withProgress(message = "Wald test ...", value = 0.1, {
           out <- purrr::imap(compare_list, function(cmp, i) {
@@ -873,6 +920,16 @@ rnaseq_dge_server <- function(id, dds) {
                                               abs(log2FoldChange) > log2(input$fc_threshold),
                                               padj < input$padj_threshold))
       })
+
+      # ----- full result workbook: one sheet per comparison -----
+      output$dl_dge_xlsx <- downloadHandler(
+        filename = function() paste0('RNAseq_', Sys.Date(), '_DGE_results.xlsx'),
+        content = function(file) {
+          res_all <- results()
+          req(length(res_all) > 0)
+          write_xlsx_sheets(res_all, file)
+        }
+      )
 
       # ----- result tables -----
       output$sig_tables_ui <- renderUI({
@@ -897,10 +954,10 @@ rnaseq_dge_server <- function(id, dds) {
                             padj_thred = input$padj_threshold)
       })
 
-      output$sig_volcano <- renderPlotly({
+      output$sig_volcano <- renderPlot({
         req(volcano_p())
-        ggplotly(volcano_p(), tooltip = c("text", "log2FoldChange", "-log10(padj)"))
-      })
+        volcano_p()
+      }, res = 96)
 
       output$dl_volcano <- downloadHandler(
         filename = function() {
@@ -909,7 +966,7 @@ rnaseq_dge_server <- function(id, dds) {
         },
         content = function(file) {
           req(volcano_p())
-          ggsave(file, volcano_p(), width = 7, height = 6, device = pdf)
+          export_plot_pdf(volcano_p(), file, width = 7, height = 6)
         })
 
       # ----- volcano box (hidden until comparison results exist) -----
@@ -919,8 +976,8 @@ rnaseq_dge_server <- function(id, dds) {
           box(width = 6, status = "primary", solidHeader = TRUE,
               div(style = "position:relative",
                   tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                           downloadButton(ns("dl_volcano"), label = NULL, icon = icon("download"), class = "btn-xs")),
-                  plotlyOutput(ns("sig_volcano"))
+                           downloadButton(ns("dl_volcano"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download volcano plot (PDF)")),
+                  plotOutput(ns("sig_volcano"), height = "400px")
               )
           )
         )
@@ -940,34 +997,43 @@ rnaseq_ora_ui <- function(id) {
   ns <- NS(id)
   fluidRow(
     box(status = "primary", solidHeader = TRUE, width = 12,
+        title = tagList("Enrichment",
+                        hint_tip("ORA tests the significant genes (from the thresholds set in step 3) for over-represented gene sets; GSEA ranks all genes by the Wald statistic. Both run against MSigDB.")),
         fluidRow(
           column(2, align = "center",
                  radioButtons(ns("species"), "Species", selected = "hs", inline = TRUE,
                               choiceNames = c("hs", "mm"), choiceValues = c("hs", "mm"))
           ),
           column(2, align = "center",
-                 radioButtons(ns("database"), "Database", selected = "HALLMARK", inline = TRUE,
+                 radioButtons(ns("database"), tagList("Database",
+                              hint_tip("HALLMARK: 50 hallmark sets; GOBP: Gene Ontology biological process; KEGG: KEGG pathways.")),
+                              selected = "HALLMARK", inline = TRUE,
                               choiceNames = c("HALLMARK", "GOBP", "KEGG"),
                               choiceValues = c("HALLMARK", "GOBP", "KEGG"))
           ),
           column(2,
-                 numericInput(ns("min_setSize"), "Min setSize", 10, min = 1, max = 100)
+                 numericInput(ns("min_setSize"), tagList("Min set size",
+                              hint_tip("Gene sets smaller than this are skipped.")),
+                              10, min = 1, max = 100)
           ),
           column(2,
-                 numericInput(ns("max_setSize"), "Max setSize", 500, min = 50, max = 1000)
+                 numericInput(ns("max_setSize"), tagList("Max set size",
+                              hint_tip("Gene sets larger than this are skipped.")),
+                              500, min = 50, max = 1000)
           ),
           column(1,
-                 numericInput(ns("ora_pval_cutoff"), "ORA pval", 0.05, min = 0, max = 0.2)
+                 numericInput(ns("ora_pval_cutoff"), "ORA p cutoff", 0.05, min = 0, max = 0.2)
           ),
           column(1, align = "center", br(),
-                 actionButton(ns("ora_apply"), "Run ORA", class = "btn-default", width = "100%")
-          ),
+                 actionButton(ns("ora_apply"), "Run ORA", class = "btn-default", width = "100%",
+                              title = "Over-representation analysis on the significant genes of every comparison."))
+          ,
           column(1,
-                 numericInput(ns("gsea_pval_cutoff"), "GSEA pval", 0.05, min = 0, max = 1)
+                 numericInput(ns("gsea_pval_cutoff"), "GSEA p cutoff", 0.05, min = 0, max = 1)
           ),
           column(1, align = "center", br(),
-                 actionButton(ns("gsea_apply"), "Run GSEA", class = "btn-default", width = "100%")
-          )
+                 actionButton(ns("gsea_apply"), "Run GSEA", class = "btn-default", width = "100%",
+                              title = "Gene-set enrichment analysis on all genes ranked by Wald statistic."))
         )
     ),
     uiOutput(ns("enrichment_tabs"))
@@ -1016,8 +1082,18 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
           showNotification("ORA result loaded from cache", duration = 1, type = "message")
           return()
         }
+        # ORA background: every gene tested in the Wald step (i.e. retained in
+        # the full results), not the enricher default of all genesets' genes
+        res_all <- tryCatch(results(), error = function(e) NULL)
+        universe <- if (!is.null(res_all)) {
+          unique(unlist(purrr::map(res_all, ~ .x$gene_name), use.names = FALSE))
+        } else character(0)
+        if (length(universe) == 0) {
+          showNotification("No tested genes found for the ORA background", duration = 5, type = "error")
+          return()
+        }
         withProgress(message = "ORA enrichment ...", value = 0.1, {
-          ora_list(rnaseq_run_ora(res_sig, genesets(),
+          ora_list(rnaseq_run_ora(res_sig, universe, genesets(),
                                   input$ora_pval_cutoff, input$min_setSize, input$max_setSize))
         })
         ora_cache$cache[[key]] <- ora_list()
@@ -1037,7 +1113,10 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         rnaseq_plot_ora_dot(ora_list()[[input$ora_tabbox]])
       })
 
-      output$ora_dotplot <- renderPlot(ora_dot_p())
+      output$ora_dotplot <- renderPlot({
+        req(ora_dot_p())
+        ora_dot_p()
+      }, res = 96)
 
       output$dl_ora_dot <- downloadHandler(
         filename = function() {
@@ -1046,7 +1125,14 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         },
         content = function(file) {
           req(ora_dot_p())
-          ggsave(file, ora_dot_p(), width = 8, height = 6, device = pdf)
+          export_plot_pdf(ora_dot_p(), file, width = 8, height = 6)
+        })
+
+      # ----- ORA result workbook (all comparisons) -----
+      output$dl_ora_xlsx <- downloadHandler(
+        filename = function() paste0('RNAseq_', Sys.Date(), '_ORA_results.xlsx'),
+        content = function(file) {
+          write_xlsx_sheets(ora_list(), file)
         })
 
       # ----- pathway genes heatmap (DEGs) -----
@@ -1137,7 +1223,10 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         rnaseq_plot_gsea_dot(gsea_list()[[input$gsea_tabbox]])
       })
 
-      output$gsea_dotplot <- renderPlot(gsea_dot_p())
+      output$gsea_dotplot <- renderPlot({
+        req(gsea_dot_p())
+        gsea_dot_p()
+      }, res = 96)
 
       output$dl_gsea_dot <- downloadHandler(
         filename = function() {
@@ -1146,7 +1235,14 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         },
         content = function(file) {
           req(gsea_dot_p())
-          ggsave(file, gsea_dot_p(), width = 8, height = 6, device = pdf)
+          export_plot_pdf(gsea_dot_p(), file, width = 8, height = 6)
+        })
+
+      # ----- GSEA result workbook (all comparisons) -----
+      output$dl_gsea_xlsx <- downloadHandler(
+        filename = function() paste0('RNAseq_', Sys.Date(), '_GSEA_results.xlsx'),
+        content = function(file) {
+          write_xlsx_sheets(gsea_list(), file)
         })
 
       # pathway selector for running score plot (follows the comparison result tab)
@@ -1164,7 +1260,10 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         req(gsea_objs(), input$gsea_tabbox, input$gsea_pathway)
         obj <- gsea_objs()[[input$gsea_tabbox]]
         validate(need(!is.null(obj) && nrow(obj@result) > 0, "No significant GSEA terms"))
-        enrichplot::gseaplot2(obj, geneSetID = input$gsea_pathway,
+        # gseaplot2 expects an ID or index, not the (wrapped) description string
+        gene_set_id <- obj@result$ID[match(input$gsea_pathway, obj@result$Description)]
+        if (is.na(gene_set_id)) gene_set_id <- input$gsea_pathway
+        enrichplot::gseaplot2(obj, geneSetID = gene_set_id,
                               title = input$gsea_pathway)
       })
 
@@ -1178,7 +1277,7 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
         },
         content = function(file) {
           req(gsea_gsea_p())
-          ggsave(file, gsea_gsea_p(), width = 8, height = 7, device = pdf)
+          export_plot_pdf(gsea_gsea_p(), file, width = 8, height = 7)
         })
 
       # ----- enrichment result tabs (hidden until ORA/GSEA results exist) -----
@@ -1191,15 +1290,18 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
               box(width = 6, status = "primary", solidHeader = TRUE,
                   div(style = "position:relative",
                       tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                               downloadButton(ns("dl_ora_dot"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                               downloadButton(ns("dl_ora_dot"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download ORA dot plot (PDF)")),
                       plotOutput(ns("ora_dotplot"), height = "490px"))),
               box(width = 6, status = "primary", solidHeader = TRUE,
                   uiOutput(ns("ora_heatmap_ui")),
-                  h5("DEGs"),
+                  h5("DEGs in the selected pathway"),
                   div(style = "position:relative",
                       tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                               downloadButton(ns("dl_ora_heat"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                               downloadButton(ns("dl_ora_heat"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download pathway DEG heatmap (PDF)")),
                       plotOutput(ns("ora_heatmap_deg"), height = "400px")))
+            ),
+            fluidRow(
+              column(4, downloadButton(ns("dl_ora_xlsx"), "Download ORA Results (xlsx)", icon = icon("table")))
             )
           )
         }
@@ -1210,14 +1312,17 @@ rnaseq_ora_server <- function(id, results, results_sig, mat) {
               box(width = 6, status = "primary", solidHeader = TRUE,
                   div(style = "position:relative",
                       tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                               downloadButton(ns("dl_gsea_dot"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                               downloadButton(ns("dl_gsea_dot"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download GSEA dot plot (PDF)")),
                       plotOutput(ns("gsea_dotplot"), height = "490px"))),
               box(width = 6, status = "primary", solidHeader = TRUE,
                   uiOutput(ns("gsea_pathway_ui")),
                   div(style = "position:relative",
                       tags$div(style = "position:absolute;top:5px;right:5px;z-index:10;",
-                               downloadButton(ns("dl_gsea_plot"), label = NULL, icon = icon("download"), class = "btn-xs")),
+                               downloadButton(ns("dl_gsea_plot"), label = NULL, icon = icon("download"), class = "btn-xs", title = "Download GSEA running-score plot (PDF)")),
                       plotOutput(ns("gsea_gseaplot"), height = "430px")))
+            ),
+            fluidRow(
+              column(4, downloadButton(ns("dl_gsea_xlsx"), "Download GSEA Results (xlsx)", icon = icon("table")))
             )
           )
         }

@@ -42,6 +42,20 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    # Compact control spacing: tight gaps between inputs and their hints
+    tags$head(tags$style(HTML("
+      .shiny-input-container { margin-bottom: 8px; }
+      .shiny-input-container:last-child { margin-bottom: 0; }
+      .shiny-input-container .help-block { margin-top: 2px; margin-bottom: 2px; }
+      .checkbox, .radio { margin: 3px 0; }
+      .box-body h5 { margin-top: 8px; margin-bottom: 4px; }
+      .box-body hr { margin: 8px 0; }
+    "))),
+    # Activate Bootstrap tooltips for [data-toggle=tooltip] elements
+    # (delegated at body level, so hints injected via renderUI work too).
+    tags$script(HTML(
+      "$(function() { $('body').tooltip({ selector: '[data-toggle=\"tooltip\"]', delay: {show: 200, hide: 100} }); });"
+    )),
     tabItems(
       tabItem(tabName = "dnaconvert", dnaConvertUI("dnaconvert")),
       tabItem(tabName = "rtpcr", rtPCRUI("rtPCR")),

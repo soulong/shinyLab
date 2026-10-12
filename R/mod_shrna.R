@@ -185,24 +185,26 @@ shRNAUI <- function(id) {
       numericInput(ns("number"), "shRNA per gene", 3, 1, 6),
       textAreaInput(ns("input"), "Gene List",
                     placeholder = "One gene per line", height = "150px"),
-      hr(),
+      helpText("ID conversion runs locally; primer design queries splashRNA online.",
+               hint_tip("Gene IDs are converted with the local org.Hs/org.Mm annotation database. 'Design Primers' then queries the splashRNA web service (splashrna.mskcc.org) once per gene, a few seconds apart - this needs an internet connection and can take a minute for long gene lists. Primers are for miR-30-based vectors (22-mer antisense + loop + overlap arms).")),
       actionButton(ns("submit"), "Convert IDs", icon = icon("sync"),
-                   class = "btn-default"),
-      br(), br(),
+                   class = "btn-default",
+                   title = "Map the gene list to SYMBOL / ENTREZID / ENSEMBL."),
       actionButton(ns("design"), "Design Primers", icon = icon("magic"),
-                   class = "btn-default"),
-      br(), br(),
-      downloadButton(ns("download"), "Download")
+                   class = "btn-default",
+                   title = "Fetch the top shRNA predictions per gene and build miR-30 cloning primers (online)."),
+      downloadButton(ns("download"), "Results (xlsx)", icon = icon("table"),
+                     title = "Converted gene IDs, antisense sequences and primer pairs, one sheet each.")
     ),
     column(9,
       box(title = "Converted Gene IDs", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
-        tableOutput(ns("gene_table"))
+        DT::dataTableOutput(ns("gene_table"))
       ),
       box(title = "shRNA Antisense Sequences", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
-        tableOutput(ns("antisense_table"))
+        DT::dataTableOutput(ns("antisense_table"))
       ),
       box(title = "Designed Primers", width = NULL, status = "primary", solidHeader = TRUE, collapsible = TRUE,
-        tableOutput(ns("primer_table"))
+        DT::dataTableOutput(ns("primer_table"))
       )
     )
   )
@@ -217,12 +219,12 @@ shRNAServer <- function(id) {
       req(input$input)
       genes <- trimws(strsplit(input$input, "\n")[[1]])
       genes <- genes[genes != ""]
-      
+
       if (length(genes) == 0) {
         showNotification("Enter at least one gene", type = "warning")
         return()
       }
-      
+
       rv$gene_info <- id_convert(genes, input$type, input$species)
     })
     
@@ -266,27 +268,32 @@ shRNAServer <- function(id) {
     })
     
     # Outputs
-    output$gene_table <- renderTable({
+    output$gene_table <- DT::renderDataTable({
       req(rv$gene_info)
-      rv$gene_info[, c("query", "SYMBOL", "ENTREZID", "ENSEMBL")]
-    }, striped = TRUE, hover = TRUE)
-    
-    output$antisense_table <- renderTable({
-      req(rv$antisense); rv$antisense
-    }, striped = TRUE, hover = TRUE)
-    
-    output$primer_table <- renderTable({
-      req(rv$primer); rv$primer
-    }, striped = TRUE, hover = TRUE)
-    
+      DT::datatable(rv$gene_info[, c("query", "SYMBOL", "ENTREZID", "ENSEMBL")],
+                    rownames = FALSE, options = dt_table_options())
+    })
+
+    output$antisense_table <- DT::renderDataTable({
+      req(rv$antisense)
+      DT::datatable(rv$antisense, rownames = FALSE, options = dt_table_options())
+    })
+
+    output$primer_table <- DT::renderDataTable({
+      req(rv$primer)
+      DT::datatable(rv$primer, rownames = FALSE, options = dt_table_options()) %>%
+        DT::formatStyle(columns = "Primer", fontFamily = "Consolas, monospace")
+    })
+
     output$download <- downloadHandler(
-      filename = function() paste0("shRNA_", Sys.Date(), ".xlsx"),
+      filename = function() paste0("shRNA_", Sys.Date(), "_results.xlsx"),
       content = function(file) {
-        sheets <- list()
-        if (!is.null(rv$antisense) && nrow(rv$antisense) > 0) sheets$Antisense <- rv$antisense
-        if (!is.null(rv$primer) && nrow(rv$primer) > 0) sheets$Primers <- rv$primer
-        req(length(sheets) > 0)
-        writexl::write_xlsx(sheets, file)
+        sheets <- list(
+          "Gene IDs" = rv$gene_info,
+          "Antisense" = rv$antisense,
+          "Primers" = rv$primer
+        )
+        write_xlsx_sheets(sheets, file)
       }
     )
   })

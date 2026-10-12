@@ -44,7 +44,7 @@
     },
     "BH": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "BH",
         "Type": "Package",
@@ -129,7 +129,7 @@
     },
     "BiocManager": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "BiocManager",
         "Title": "Access the Bioconductor Project Package Repository",
@@ -251,7 +251,7 @@
     },
     "DBI": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "DBI",
         "Title": "R Database Interface",
@@ -351,7 +351,7 @@
     },
     "DT": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "DT",
@@ -410,7 +410,7 @@
     },
     "Deriv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "Deriv",
         "Type": "Package",
@@ -439,7 +439,7 @@
     },
     "FNN": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "FNN",
         "Version": "1.1.4.1",
@@ -463,7 +463,7 @@
     },
     "Formula": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "Formula",
         "Version": "1.2-6",
@@ -639,7 +639,7 @@
     },
     "KernSmooth": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "KernSmooth",
         "Priority": "recommended",
@@ -670,7 +670,7 @@
     },
     "MASS": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "MASS",
         "Priority": "recommended",
@@ -700,7 +700,7 @@
     },
     "Matrix": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "Matrix",
         "Version": "1.7-6",
@@ -766,7 +766,7 @@
     },
     "MatrixModels": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "MatrixModels",
         "Version": "0.5-4",
@@ -795,7 +795,7 @@
     },
     "R6": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "R6",
         "Title": "Encapsulated Classes with Reference Semantics",
@@ -822,7 +822,7 @@
     },
     "RColorBrewer": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "RColorBrewer",
         "Version": "1.1-3",
@@ -843,7 +843,7 @@
     },
     "RSQLite": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "RSQLite",
         "Title": "SQLite Interface for R",
@@ -878,7 +878,7 @@
     },
     "Rcpp": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "Rcpp",
         "Title": "Seamless R and C++ Integration",
@@ -907,7 +907,7 @@
     },
     "RcppArmadillo": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "RcppArmadillo",
         "Type": "Package",
@@ -939,7 +939,7 @@
     },
     "RcppEigen": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "RcppEigen",
         "Type": "Package",
@@ -969,7 +969,7 @@
     },
     "Rdpack": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "Rdpack",
         "Type": "Package",
@@ -1062,7 +1062,7 @@
     },
     "S7": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "S7",
         "Title": "An Object Oriented System Meant to Become a Successor to S3 and\nS4",
@@ -1160,7 +1160,7 @@
     },
     "SparseM": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "SparseM",
         "Version": "1.84-2",
@@ -1185,7 +1185,7 @@
     },
     "SpatialExtremes": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "SpatialExtremes",
         "Version": "2.1-0",
@@ -1241,7 +1241,7 @@
     },
     "TH.data": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "TH.data",
         "Title": "TH's Data Archive",
@@ -1296,7 +1296,7 @@
     },
     "abind": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "abind",
         "Version": "1.4-8",
@@ -1318,7 +1318,7 @@
     },
     "aisdk": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "aisdk",
         "Title": "Unified Interface for AI Model Providers",
@@ -1345,7 +1345,7 @@
     },
     "ape": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ape",
         "Version": "5.8-1",
@@ -1374,7 +1374,7 @@
     },
     "aplot": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "aplot",
         "Title": "Decorate a 'ggplot' with Associated Information",
@@ -1400,7 +1400,7 @@
     },
     "askpass": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "askpass",
         "Type": "Package",
@@ -1428,7 +1428,7 @@
     },
     "assertthat": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "assertthat",
         "Title": "Easy Pre and Post Assertions",
@@ -1451,7 +1451,7 @@
     },
     "babelgene": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "babelgene",
@@ -1480,7 +1480,7 @@
     },
     "backports": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "backports",
         "Type": "Package",
@@ -1507,7 +1507,7 @@
     },
     "base64enc": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "base64enc",
         "Version": "0.1-6",
@@ -1531,7 +1531,7 @@
     },
     "bit": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "bit",
         "Title": "Classes and Methods for Fast Memory-Efficient Boolean Selections",
@@ -1560,7 +1560,7 @@
     },
     "bit64": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "bit64",
         "Title": "A S3 Class for Vectors of 64bit Integers",
@@ -1596,7 +1596,7 @@
     },
     "blob": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "blob",
         "Title": "A Simple S3 Class for Representing Vectors of Binary Data\n('BLOBS')",
@@ -1625,7 +1625,7 @@
     },
     "boot": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "boot",
         "Priority": "recommended",
@@ -1651,7 +1651,7 @@
     },
     "broom": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "broom",
@@ -1684,7 +1684,7 @@
     },
     "bslib": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "bslib",
         "Title": "Custom 'Bootstrap' 'Sass' Themes for 'shiny' and 'rmarkdown'",
@@ -1717,7 +1717,7 @@
     },
     "cachem": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cachem",
         "Version": "1.1.0",
@@ -1745,7 +1745,7 @@
     },
     "callr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "callr",
         "Title": "Call R from R",
@@ -1775,7 +1775,7 @@
     },
     "car": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "car",
         "Version": "3.1-5",
@@ -1802,7 +1802,7 @@
     },
     "carData": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "carData",
         "Version": "3.0-6",
@@ -1827,7 +1827,7 @@
     },
     "cellranger": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cellranger",
         "Title": "Translate Spreadsheet Cell Ranges to Rows and Columns",
@@ -1854,7 +1854,7 @@
     },
     "checkmate": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "checkmate",
         "Type": "Package",
@@ -1886,7 +1886,7 @@
     },
     "class": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "class",
         "Priority": "recommended",
@@ -1912,7 +1912,7 @@
     },
     "classInt": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "classInt",
         "Version": "0.4-11",
@@ -1941,7 +1941,7 @@
     },
     "cli": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cli",
         "Title": "Helpers for Developing Command Line Interfaces",
@@ -1971,7 +1971,7 @@
     },
     "clipr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "clipr",
@@ -2000,7 +2000,7 @@
     },
     "cluster": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cluster",
         "Version": "2.1.8.3",
@@ -2068,7 +2068,7 @@
     },
     "codetools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "codetools",
         "Version": "0.2-20",
@@ -2089,7 +2089,7 @@
     },
     "colorspace": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "colorspace",
         "Version": "2.1-3",
@@ -2119,7 +2119,7 @@
     },
     "commonmark": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "commonmark",
         "Type": "Package",
@@ -2146,7 +2146,7 @@
     },
     "conflicted": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "conflicted",
         "Title": "An Alternative Conflict Resolution Strategy",
@@ -2174,7 +2174,7 @@
     },
     "corrplot": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "corrplot",
         "Type": "Package",
@@ -2200,7 +2200,7 @@
     },
     "cowplot": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cowplot",
         "Title": "Streamlined Plot Theme and Plot Annotations for 'ggplot2'",
@@ -2228,7 +2228,7 @@
     },
     "cpp11": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "cpp11",
         "Title": "A C++11 Interface for R's C Interface",
@@ -2257,7 +2257,7 @@
     },
     "crayon": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "crayon",
         "Title": "Colored Terminal Output",
@@ -2284,7 +2284,7 @@
     },
     "crosstalk": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "crosstalk",
@@ -2311,7 +2311,7 @@
     },
     "curl": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "curl",
         "Type": "Package",
@@ -2341,7 +2341,7 @@
     },
     "data.table": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "data.table",
         "Version": "1.18.4",
@@ -2369,7 +2369,7 @@
     },
     "dbplyr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "dbplyr",
@@ -2402,7 +2402,7 @@
     },
     "digest": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "digest",
         "Authors@R": "c(person(\"Dirk\", \"Eddelbuettel\", role = c(\"aut\", \"cre\"), email = \"edd@debian.org\",\n                    comment = c(ORCID = \"0000-0001-6419-907X\")),\n             person(\"Antoine\", \"Lucas\", role=\"ctb\", comment = c(ORCID = \"0000-0002-8059-9767\")),\n             person(\"Jarek\", \"Tuszynski\", role=\"ctb\"),\n             person(\"Henrik\", \"Bengtsson\", role=\"ctb\", comment = c(ORCID = \"0000-0002-7579-5165\")),\n             person(\"Simon\", \"Urbanek\", role=\"ctb\", comment = c(ORCID = \"0000-0003-2297-1732\")),\n             person(\"Mario\", \"Frasca\", role=\"ctb\"),\n             person(\"Bryan\", \"Lewis\", role=\"ctb\"),\n             person(\"Murray\", \"Stokely\", role=\"ctb\"),\n             person(\"Hannes\", \"Muehleisen\", role=\"ctb\", comment = c(ORCID = \"0000-0001-8552-0029\")),\n             person(\"Duncan\", \"Murdoch\", role=\"ctb\"),\n             person(\"Jim\", \"Hester\", role=\"ctb\", comment = c(ORCID = \"0000-0002-2739-7082\")),\n             person(\"Wush\", \"Wu\", role=\"ctb\", comment = c(ORCID = \"0000-0001-5180-0567\")),\n             person(\"Qiang\", \"Kou\", role=\"ctb\", comment = c(ORCID = \"0000-0001-6786-5453\")),\n             person(\"Thierry\", \"Onkelinx\", role=\"ctb\", comment = c(ORCID = \"0000-0001-8804-4216\")),\n             person(\"Michel\", \"Lang\", role=\"ctb\", comment = c(ORCID = \"0000-0001-9754-0393\")),\n             person(\"Viliam\", \"Simko\", role=\"ctb\"),\n             person(\"Kurt\", \"Hornik\", role=\"ctb\", comment = c(ORCID = \"0000-0003-4198-9911\")),\n             person(\"Radford\", \"Neal\", role=\"ctb\", comment = c(ORCID = \"0000-0002-2473-3407\")),\n             person(\"Kendon\", \"Bell\", role=\"ctb\", comment = c(ORCID = \"0000-0002-9093-8312\")),\n             person(\"Matthew\", \"de Queljoe\", role=\"ctb\"),\n             person(\"Dmitry\", \"Selivanov\", role=\"ctb\", comment = c(ORCID = \"0000-0003-0492-6647\")),\n             person(\"Ion\", \"Suruceanu\", role=\"ctb\", comment = c(ORCID = \"0009-0005-6446-4909\")),\n             person(\"Bill\", \"Denney\", role=\"ctb\", comment = c(ORCID = \"0000-0002-5759-428X\")),\n             person(\"Dirk\", \"Schumacher\", role=\"ctb\"),\n             person(\"András\", \"Svraka\", role=\"ctb\", comment = c(ORCID = \"0009-0008-8480-1329\")),\n             person(\"Sergey\", \"Fedorov\", role=\"ctb\", comment = c(ORCID = \"0000-0002-5970-7233\")),\n             person(\"Will\", \"Landau\", role=\"ctb\", comment = c(ORCID = \"0000-0003-1878-3253\")),\n             person(\"Floris\", \"Vanderhaeghe\", role=\"ctb\", comment = c(ORCID = \"0000-0002-6378-6229\")),\n             person(\"Kevin\", \"Tappe\", role=\"ctb\"),\n             person(\"Harris\", \"McGehee\", role=\"ctb\"),\n             person(\"Tim\", \"Mastny\", role=\"ctb\"),\n             person(\"Aaron\", \"Peikert\", role=\"ctb\", comment = c(ORCID = \"0000-0001-7813-818X\")),\n             person(\"Mark\", \"van der Loo\", role=\"ctb\", comment = c(ORCID = \"0000-0002-9807-4686\")),\n             person(\"Chris\", \"Muir\", role=\"ctb\", comment = c(ORCID = \"0000-0003-2555-3878\")),\n             person(\"Moritz\", \"Beller\", role=\"ctb\", comment = c(ORCID = \"0000-0003-4852-0526\")),\n             person(\"Sebastian\", \"Campbell\", role=\"ctb\", comment = c(ORCID = \"0009-0000-5948-4503\")),\n             person(\"Winston\", \"Chang\", role=\"ctb\", comment = c(ORCID = \"0000-0002-1576-2126\")),\n             person(\"Dean\", \"Attali\", role=\"ctb\", comment = c(ORCID = \"0000-0002-5645-3493\")),\n             person(\"Michael\", \"Chirico\", role=\"ctb\", comment = c(ORCID = \"0000-0003-0787-087X\")),\n             person(\"Kevin\", \"Ushey\", role=\"ctb\", comment = c(ORCID = \"0000-0003-2880-7407\")),\n             person(\"Carl\", \"Pearson\", role=\"ctb\", comment = c(ORCID = \"0000-0003-0701-7860\")))",
@@ -2430,7 +2430,7 @@
     },
     "doBy": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "doBy",
         "Version": "4.7.2",
@@ -2458,7 +2458,7 @@
     },
     "dotCall64": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "dotCall64",
         "Type": "Package",
@@ -2486,7 +2486,7 @@
     },
     "dplyr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "dplyr",
@@ -2519,7 +2519,7 @@
     },
     "drc": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "drc",
         "Version": "3.0-1",
@@ -2543,7 +2543,7 @@
     },
     "dtplyr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "dtplyr",
         "Title": "Data Table Back-End for 'dplyr'",
@@ -2572,7 +2572,7 @@
     },
     "e1071": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "e1071",
         "Version": "1.7-17",
@@ -2595,7 +2595,7 @@
     },
     "enrichit": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "enrichit",
         "Title": "'C++' Implementations of Functional Enrichment Analysis",
@@ -2655,7 +2655,7 @@
     },
     "evaluate": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "evaluate",
@@ -2683,7 +2683,7 @@
     },
     "farver": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "farver",
@@ -2710,7 +2710,7 @@
     },
     "fastmap": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fastmap",
         "Title": "Fast Data Structures",
@@ -2735,7 +2735,7 @@
     },
     "fields": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fields",
         "Version": "17.3",
@@ -2758,35 +2758,9 @@
         "Archs": "x64"
       }
     },
-    "fingerprint": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "fingerprint",
-        "Version": "3.5.10",
-        "Date": "2026-04-03",
-        "Title": "Functions to Operate on Binary Fingerprint Data",
-        "Authors@R": "c(\n    person(given = \"Rajarshi\",\n           family = \"Guha\",\n           role = c(\"aut\"),\n           email = \"rajarshi.guha@gmail.com\"),\n    person(given = \"Zach\",\n           family = \"Charlop-Powers\",\n           role = c(\"cre\"),\n           email = \"zach.charlop.powers@gmail.com\"))",
-        "Author": "Rajarshi Guha [aut],\n  Zach Charlop-Powers [cre]",
-        "Maintainer": "Zach Charlop-Powers <zach.charlop.powers@gmail.com>",
-        "BugReports": "https://github.com/CDK-R/cdkr/issues",
-        "Description": "Functions to manipulate binary fingerprints\n of arbitrary length. A fingerprint is represented by an object of S4 class 'fingerprint'\n which is internally represented a vector of integers, such\n that each element represents the position in the fingerprint that is set to 1.\n The bitwise logical functions in R are overridden so that they can be used directly\n with 'fingerprint' objects. A number of distance metrics are also\n available (many contributed by Michael Fadock). Fingerprints\n can be converted to Euclidean vectors (i.e., points on the unit hypersphere) and\n can also be folded using OR.  Arbitrary fingerprint formats can be handled via line\n handlers. Currently handlers are provided for CDK, MOE and BCI fingerprint data.",
-        "License": "GPL | file LICENSE",
-        "Depends": "methods",
-        "LazyLoad": "yes",
-        "Suggests": "RUnit, testthat (>= 3.0.0)",
-        "Config/testthat/edition": "3",
-        "NeedsCompilation": "yes",
-        "Packaged": "2026-04-03 16:52:07 UTC; zcpowers",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-04-04 05:11:07 UTC",
-        "Built": "R 4.6.1; x86_64-w64-mingw32; 2026-08-23 01:06:08 UTC; windows",
-        "Archs": "x64"
-      }
-    },
     "fontBitstreamVera": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fontBitstreamVera",
         "Title": "Fonts with 'Bitstream Vera Fonts' License",
@@ -2810,7 +2784,7 @@
     },
     "fontLiberation": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fontLiberation",
         "Title": "Liberation Fonts",
@@ -2834,7 +2808,7 @@
     },
     "fontawesome": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "fontawesome",
@@ -2863,7 +2837,7 @@
     },
     "fontquiver": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fontquiver",
         "Title": "Set of Installed Fonts",
@@ -2889,7 +2863,7 @@
     },
     "forcats": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "forcats",
         "Title": "Tools for Working with Categorical Variables (Factors)",
@@ -2919,7 +2893,7 @@
     },
     "foreach": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "foreach",
         "Type": "Package",
@@ -2947,7 +2921,7 @@
     },
     "forecast": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "forecast",
         "Version": "9.0.2",
@@ -2979,7 +2953,7 @@
     },
     "formatR": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "formatR",
         "Type": "Package",
@@ -3006,7 +2980,7 @@
     },
     "formula.tools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "formula.tools",
         "Type": "Package",
@@ -3037,7 +3011,7 @@
     },
     "fracdiff": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fracdiff",
         "Version": "1.5-4",
@@ -3064,7 +3038,7 @@
     },
     "fs": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "fs",
         "Title": "Cross-Platform File System Operations Based on 'libuv'",
@@ -3098,7 +3072,7 @@
     },
     "furrr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "furrr",
         "Title": "Apply Mapping Functions in Parallel using Futures",
@@ -3126,7 +3100,7 @@
     },
     "futile.logger": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "futile.logger",
         "Type": "Package",
@@ -3155,7 +3129,7 @@
     },
     "futile.options": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "futile.options",
         "Type": "Package",
@@ -3177,7 +3151,7 @@
     },
     "future": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "future",
         "Version": "1.75.0",
@@ -3208,7 +3182,7 @@
     },
     "gargle": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gargle",
         "Title": "Utilities for Working with Google APIs",
@@ -3238,7 +3212,7 @@
     },
     "gdtools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gdtools",
         "Title": "Font Metrics and Font Management Utilities for R Graphics",
@@ -3267,7 +3241,7 @@
     },
     "generics": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "generics",
         "Title": "Common S3 Generics not Provided by Base R Methods Related to\nModel Fitting",
@@ -3295,7 +3269,7 @@
     },
     "ggforce": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggforce",
         "Type": "Package",
@@ -3325,7 +3299,7 @@
     },
     "ggfun": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggfun",
         "Title": "Miscellaneous Functions for 'ggplot2'",
@@ -3353,7 +3327,7 @@
     },
     "ggiraph": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "ggiraph",
@@ -3385,7 +3359,7 @@
     },
     "ggnewscale": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggnewscale",
         "Language": "en-GB",
@@ -3411,7 +3385,7 @@
     },
     "ggokabeito": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggokabeito",
         "Title": "'Okabe-Ito' Scales for 'ggplot2' and 'ggraph'",
@@ -3439,7 +3413,7 @@
     },
     "ggplot2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggplot2",
         "Title": "Create Elegant Data Visualisations Using the Grammar of Graphics",
@@ -3472,7 +3446,7 @@
     },
     "ggplotify": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggplotify",
         "Title": "Convert Plot to 'grob' or 'ggplot' Object",
@@ -3500,7 +3474,7 @@
     },
     "ggrepel": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggrepel",
         "Version": "0.9.8",
@@ -3529,7 +3503,7 @@
     },
     "ggtangle": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ggtangle",
         "Title": "Draw Network with Data",
@@ -3589,7 +3563,7 @@
     },
     "glmnet": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "glmnet",
         "Type": "Package",
@@ -3620,7 +3594,7 @@
     },
     "globals": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "globals",
         "Version": "0.19.1",
@@ -3648,7 +3622,7 @@
     },
     "glue": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "glue",
         "Title": "Interpreted String Literals",
@@ -3680,7 +3654,7 @@
     },
     "googledrive": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "googledrive",
         "Title": "An Interface to Google Drive",
@@ -3710,7 +3684,7 @@
     },
     "googlesheets4": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "googlesheets4",
         "Title": "Access Google Sheets using the Sheets API V4",
@@ -3740,7 +3714,7 @@
     },
     "gratia": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gratia",
         "Version": "0.11.2",
@@ -3771,7 +3745,7 @@
     },
     "gridGraphics": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gridGraphics",
         "Title": "Redraw Base Graphics Using 'grid' Graphics",
@@ -3794,7 +3768,7 @@
     },
     "gson": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gson",
         "Title": "Base Class and Methods for 'gson' Format",
@@ -3819,7 +3793,7 @@
     },
     "gstat": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gstat",
         "Version": "2.1-6",
@@ -3846,7 +3820,7 @@
     },
     "gtable": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gtable",
         "Title": "Arrange 'Grobs' in Tables",
@@ -3876,7 +3850,7 @@
     },
     "gtools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "gtools",
         "Title": "Various R Programming Tools",
@@ -3903,7 +3877,7 @@
     },
     "haven": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "haven",
         "Title": "Import and Export 'SPSS', 'Stata' and 'SAS' Files",
@@ -3935,7 +3909,7 @@
     },
     "highr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "highr",
         "Type": "Package",
@@ -3963,7 +3937,7 @@
     },
     "hms": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "hms",
         "Title": "Pretty Time of Day",
@@ -3991,7 +3965,7 @@
     },
     "htmltools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "htmltools",
@@ -4023,7 +3997,7 @@
     },
     "htmlwidgets": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "htmlwidgets",
@@ -4051,7 +4025,7 @@
     },
     "httpuv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "httpuv",
@@ -4085,7 +4059,7 @@
     },
     "httr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "httr",
         "Title": "Tools for Working with URLs and HTTP",
@@ -4113,7 +4087,7 @@
     },
     "httr2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "httr2",
         "Title": "Perform HTTP Requests and Process the Responses",
@@ -4144,7 +4118,7 @@
     },
     "ids": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ids",
         "Title": "Generate Random Identifiers",
@@ -4169,7 +4143,7 @@
     },
     "igraph": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "igraph",
         "Title": "Network Analysis and Visualization",
@@ -4210,7 +4184,7 @@
     },
     "intervals": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "intervals",
         "Version": "0.15.5",
@@ -4235,7 +4209,7 @@
     },
     "isoband": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "isoband",
         "Title": "Generate Isolines and Isobands from Regularly Spaced Elevation\nGrids",
@@ -4267,7 +4241,7 @@
     },
     "iterators": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "iterators",
         "Type": "Package",
@@ -4288,34 +4262,9 @@
         "Built": "R 4.6.1; ; 2026-08-23 00:53:21 UTC; windows"
       }
     },
-    "itertools": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "itertools",
-        "Type": "Package",
-        "Title": "Iterator Tools",
-        "Version": "0.1-3",
-        "Author": "Steve Weston, Hadley Wickham",
-        "Maintainer": "Steve Weston <stephen.b.weston@gmail.com>",
-        "Description": "Various tools for creating iterators, many patterned after\n        functions in the Python itertools module, and others patterned\n        after functions in the 'snow' package.",
-        "Depends": "R (>= 2.14.0), iterators(>= 1.0.0)",
-        "Imports": "parallel",
-        "Suggests": "foreach",
-        "License": "GPL-2",
-        "Repository": "CRAN",
-        "Repository/R-Forge/Project": "itertools",
-        "Repository/R-Forge/Revision": "60",
-        "Repository/R-Forge/DateTimeStamp": "2014-02-27 22:33:49",
-        "Date/Publication": "2014-03-12 00:20:01",
-        "Packaged": "2014-02-27 23:36:25 UTC; rforge",
-        "NeedsCompilation": "no",
-        "Built": "R 4.6.1; ; 2026-08-23 00:58:35 UTC; windows"
-      }
-    },
     "janitor": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "janitor",
         "Title": "Simple Tools for Examining and Cleaning Dirty Data",
@@ -4343,7 +4292,7 @@
     },
     "jomo": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "jomo",
         "Type": "Package",
@@ -4367,7 +4316,7 @@
     },
     "jquerylib": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "jquerylib",
         "Title": "Obtain 'jQuery' as an HTML Dependency Object",
@@ -4391,7 +4340,7 @@
     },
     "jsonlite": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "jsonlite",
         "Version": "2.0.0",
@@ -4418,7 +4367,7 @@
     },
     "knitr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "knitr",
         "Type": "Package",
@@ -4448,7 +4397,7 @@
     },
     "kriging": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "kriging",
         "Version": "1.2",
@@ -4468,7 +4417,7 @@
     },
     "labeling": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "labeling",
         "Type": "Package",
@@ -4490,7 +4439,7 @@
     },
     "lambda.r": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lambda.r",
         "Type": "Package",
@@ -4514,7 +4463,7 @@
     },
     "later": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "later",
@@ -4548,7 +4497,7 @@
     },
     "lattice": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lattice",
         "Version": "0.23-1",
@@ -4583,7 +4532,7 @@
     },
     "lazyeval": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lazyeval",
         "Version": "0.2.3",
@@ -4609,7 +4558,7 @@
     },
     "lifecycle": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lifecycle",
         "Title": "Manage the Life Cycle of your Package Functions",
@@ -4638,7 +4587,7 @@
     },
     "listenv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "listenv",
         "Version": "1.0.0",
@@ -4666,7 +4615,7 @@
     },
     "lme4": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lme4",
         "Version": "2.0-6",
@@ -4696,7 +4645,7 @@
     },
     "lmtest": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "lmtest",
         "Title": "Testing Linear Regression Models",
@@ -4721,7 +4670,7 @@
     },
     "locfit": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "locfit",
         "Version": "1.5-9.12",
@@ -4746,7 +4695,7 @@
     },
     "lubridate": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "lubridate",
@@ -4781,7 +4730,7 @@
     },
     "magrittr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "magrittr",
@@ -4811,7 +4760,7 @@
     },
     "maps": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "maps",
         "Title": "Draw Geographical Maps",
@@ -4838,7 +4787,7 @@
     },
     "matrixStats": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "matrixStats",
         "Version": "1.5.0",
@@ -4866,7 +4815,7 @@
     },
     "memoise": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "memoise",
         "Title": "'Memoisation' of Functions",
@@ -4891,7 +4840,7 @@
     },
     "metR": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "metR",
         "Title": "Tools for Easier Analysis of Meteorological Fields",
@@ -4921,7 +4870,7 @@
     },
     "mgcv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mgcv",
         "Version": "1.9-4",
@@ -4947,7 +4896,7 @@
     },
     "mice": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mice",
         "Type": "Package",
@@ -4979,7 +4928,7 @@
     },
     "mime": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mime",
         "Type": "Package",
@@ -5005,7 +4954,7 @@
     },
     "minqa": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "minqa",
         "Type": "Package",
@@ -5030,7 +4979,7 @@
     },
     "mirai": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "mirai",
@@ -5063,7 +5012,7 @@
     },
     "mitml": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mitml",
         "Type": "Package",
@@ -5089,7 +5038,7 @@
     },
     "modelr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "modelr",
         "Title": "Modelling Functions that Work with the Pipe",
@@ -5118,7 +5067,7 @@
     },
     "msigdbr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "msigdbr",
@@ -5151,7 +5100,7 @@
     },
     "multcomp": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "multcomp",
         "Title": "Simultaneous Inference in General Parametric Models",
@@ -5180,7 +5129,7 @@
     },
     "mvnfast": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mvnfast",
         "Type": "Package",
@@ -5208,7 +5157,7 @@
     },
     "mvtnorm": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "mvtnorm",
         "Title": "Multivariate Normal and t Distributions",
@@ -5232,7 +5181,7 @@
     },
     "nanonext": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "nanonext",
@@ -5267,7 +5216,7 @@
     },
     "nleqslv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "nleqslv",
         "Version": "3.3.7",
@@ -5293,7 +5242,7 @@
     },
     "nlme": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "nlme",
         "Version": "3.1-170",
@@ -5324,7 +5273,7 @@
     },
     "nloptr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "nloptr",
         "Type": "Package",
@@ -5353,7 +5302,7 @@
     },
     "nnet": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "nnet",
         "Priority": "recommended",
@@ -5379,7 +5328,7 @@
     },
     "numDeriv": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "numDeriv",
         "Version": "2016.8-1.1",
@@ -5402,7 +5351,7 @@
     },
     "openssl": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "openssl",
         "Type": "Package",
@@ -5431,7 +5380,7 @@
     },
     "operator.tools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "operator.tools",
         "Type": "Package",
@@ -5457,7 +5406,7 @@
     },
     "ordinal": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ordinal",
         "Type": "Package",
@@ -5528,7 +5477,7 @@
     },
     "otel": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "otel",
         "Title": "OpenTelemetry R API",
@@ -5556,7 +5505,7 @@
     },
     "pan": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "pan",
         "Version": "2.0",
@@ -5580,7 +5529,7 @@
     },
     "parallelly": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "parallelly",
         "Version": "1.48.0",
@@ -5611,7 +5560,7 @@
     },
     "patchwork": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "patchwork",
         "Type": "Package",
@@ -5639,7 +5588,7 @@
     },
     "pbapply": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "pbapply",
         "Type": "Package",
@@ -5665,7 +5614,7 @@
     },
     "pbkrtest": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "pbkrtest",
         "Version": "0.5.5",
@@ -5693,7 +5642,7 @@
     },
     "permute": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "permute",
         "Title": "Functions for Generating Restricted Permutations of Data",
@@ -5721,7 +5670,7 @@
     },
     "pillar": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "pillar",
         "Title": "Coloured Formatting for Columns",
@@ -5754,7 +5703,7 @@
     },
     "pkgconfig": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "pkgconfig",
         "Title": "Private Configuration for 'R' Packages",
@@ -5778,7 +5727,7 @@
     },
     "plotly": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "plotly",
         "Title": "Create Interactive Web Graphics via 'plotly.js'",
@@ -5806,7 +5755,7 @@
     },
     "plotrix": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "plotrix",
         "Version": "3.8-14",
@@ -5829,7 +5778,7 @@
     },
     "plyr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "plyr",
         "Title": "Tools for Splitting, Applying and Combining Data",
@@ -5858,7 +5807,7 @@
     },
     "png": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "png",
         "Version": "0.1-9",
@@ -5882,7 +5831,7 @@
     },
     "polyclip": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "polyclip",
         "Version": "1.10-7",
@@ -5908,7 +5857,7 @@
     },
     "prettyunits": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "prettyunits",
         "Title": "Pretty, Human Readable Formatting of Quantities",
@@ -5933,7 +5882,7 @@
     },
     "processx": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "processx",
         "Title": "Execute and Control System Processes",
@@ -5963,7 +5912,7 @@
     },
     "progress": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "progress",
         "Title": "Terminal Progress Bars",
@@ -5991,7 +5940,7 @@
     },
     "promises": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "promises",
@@ -6023,7 +5972,7 @@
     },
     "proxy": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "proxy",
         "Type": "Package",
@@ -6048,7 +5997,7 @@
     },
     "ps": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ps",
         "Title": "List, Query, Manipulate System Processes",
@@ -6079,7 +6028,7 @@
     },
     "purrr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "purrr",
         "Title": "Functional Programming Tools",
@@ -6113,7 +6062,7 @@
     },
     "quantreg": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "quantreg",
         "Title": "Quantile Regression",
@@ -6168,33 +6117,9 @@
         "Built": "R 4.6.0; ; 2026-04-29 13:03:05 UTC; windows"
       }
     },
-    "rJava": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "rJava",
-        "Version": "1.0-18",
-        "Title": "Low-Level R to Java Interface",
-        "Author": "Simon Urbanek [aut, cre, cph] (https://urbanek.nz, ORCID:\n    <https://orcid.org/0000-0003-2297-1732>)",
-        "Maintainer": "Simon Urbanek <Simon.Urbanek@r-project.org>",
-        "Authors@R": "person(\"Simon\", \"Urbanek\", role=c(\"aut\",\"cre\",\"cph\"), email=\"Simon.Urbanek@r-project.org\", comment=c(\"https://urbanek.nz\", ORCID=\"0000-0003-2297-1732\"))",
-        "Depends": "R (>= 3.6.0), methods",
-        "Description": "Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.",
-        "License": "LGPL-2.1",
-        "URL": "https://www.rforge.net/rJava/",
-        "SystemRequirements": "Java JDK 1.2 or higher (for JRI/REngine JDK 1.4 or\nhigher), GNU make",
-        "BugReports": "https://github.com/s-u/rJava/issues",
-        "NeedsCompilation": "yes",
-        "Packaged": "2026-04-08 02:23:57 UTC; rforge",
-        "Repository": "CRAN",
-        "Date/Publication": "2026-04-08 12:21:52 UTC",
-        "Built": "R 4.6.1; x86_64-w64-mingw32; 2026-08-19 11:47:47 UTC; windows",
-        "Archs": "x64"
-      }
-    },
     "ragg": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "ragg",
@@ -6227,7 +6152,7 @@
     },
     "rappdirs": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "rappdirs",
@@ -6258,7 +6183,7 @@
     },
     "rbibutils": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rbibutils",
         "Type": "Package",
@@ -6284,64 +6209,9 @@
         "Archs": "x64"
       }
     },
-    "rcdk": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "rcdk",
-        "Version": "3.8.2",
-        "Date": "2025-11-30",
-        "Title": "Interface to the 'CDK' Libraries",
-        "Authors@R": "c(\n  person('Rajarshi', 'Guha', ,'rajarshi.guha@gmail.com', role=c('aut',\"cph\"),\n    comment = c(ORCID = \"0000-0001-7403-8819\")),\n  person('Zachary', 'Charlop-Powers', ,'zach.charlop.powers@gmail.com',role=c('cre'),\n      comment = c(ORCID = \"0000-0001-8816-4680\")),\n  person('Emma', 'Schymanski', ,'schymane@gmail.com', role=c('ctb'),\n      comment = c(ORCID = \"0000-0001-6868-8145\")),\n  person('Egon', 'Willighagen', ,'egon.willighagen@maastrichtuniversity.nl', role=c('ctb'),\n      comment = c(ORCID = \"0000-0001-7542-0286\")))",
-        "Depends": "rcdklibs (>= 2.9)",
-        "Imports": "fingerprint, rJava, methods, png, iterators, itertools",
-        "Suggests": "xtable, RUnit, knitr, rmarkdown, devtools",
-        "License": "LGPL",
-        "URL": "https://github.com/CDK-R/cdkr",
-        "LazyLoad": "yes",
-        "LazyData": "true",
-        "SystemRequirements": "Java (>= 8)",
-        "BugReports": "https://github.com/CDK-R/cdkr/issues",
-        "Description": "Allows the user to access functionality in the\n    'CDK', a Java framework for cheminformatics. This allows the user to load\n    molecules, evaluate fingerprints, calculate molecular descriptors and so on.\n    In addition, the 'CDK' API allows the user to view structures in 2D.",
-        "RoxygenNote": "7.3.3",
-        "VignetteBuilder": "knitr",
-        "Encoding": "UTF-8",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-11-30 15:59:31 UTC; zcpowers",
-        "Author": "Rajarshi Guha [aut, cph] (ORCID:\n    <https://orcid.org/0000-0001-7403-8819>),\n  Zachary Charlop-Powers [cre] (ORCID:\n    <https://orcid.org/0000-0001-8816-4680>),\n  Emma Schymanski [ctb] (ORCID: <https://orcid.org/0000-0001-6868-8145>),\n  Egon Willighagen [ctb] (ORCID: <https://orcid.org/0000-0001-7542-0286>)",
-        "Maintainer": "Zachary Charlop-Powers <zach.charlop.powers@gmail.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-11-30 16:40:08 UTC",
-        "Built": "R 4.6.1; ; 2026-08-23 01:50:37 UTC; windows"
-      }
-    },
-    "rcdklibs": {
-      "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
-      "description": {
-        "Package": "rcdklibs",
-        "Version": "2.9",
-        "Date": "2024-03-02",
-        "Authors@R": "c(\n  person('Rajarshi', 'Guha', ,'rajarshi.guha@gmail.com', role=c('aut'),\n    comment = c(ORCID = \"0000-0001-7403-8819\")),\n  person('Zachary', 'Charlop-Powers', ,'zach.charlop.powers@gmail.com',role=c('cre'), \n      comment = c(ORCID = \"0000-0001-8816-4680\")),\n  person('CDK Project', '', role=c('ctb', 'cph'), comment='CDK Java library contained in multiple jar files'))",
-        "Depends": "R (>= 2.0.0), rJava",
-        "License": "LGPL",
-        "Title": "The CDK Libraries Packaged for R",
-        "Description": "An R interface to the Chemistry Development Kit, a Java library\n    for chemoinformatics. Given the size of the library itself, this package is\n    not expected to change very frequently. To make use of the CDK within R, it is\n    suggested that you use the 'rcdk' package. Note that it is possible to directly\n    interact with the CDK using 'rJava'. However 'rcdk' exposes functionality in a more\n    idiomatic way. The CDK library itself is released as LGPL and the sources can be\n    obtained from <https://github.com/cdk/cdk>.",
-        "RoxygenNote": "7.3.1",
-        "URL": "https://cdk-r.github.io/rcdklibs/",
-        "Encoding": "UTF-8",
-        "NeedsCompilation": "no",
-        "Packaged": "2024-03-03 03:28:12 UTC; zcpowers",
-        "Author": "Rajarshi Guha [aut] (<https://orcid.org/0000-0001-7403-8819>),\n  Zachary Charlop-Powers [cre] (<https://orcid.org/0000-0001-8816-4680>),\n  CDK Project [ctb, cph] (CDK Java library contained in multiple jar\n    files)",
-        "Maintainer": "Zachary Charlop-Powers <zach.charlop.powers@gmail.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2024-03-03 15:20:02 UTC",
-        "Built": "R 4.6.1; ; 2026-08-19 11:59:00 UTC; windows"
-      }
-    },
     "readr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "readr",
         "Title": "Read Rectangular Text Data",
@@ -6375,7 +6245,7 @@
     },
     "readxl": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "readxl",
         "Title": "Read Excel Files",
@@ -6408,7 +6278,7 @@
     },
     "reformulas": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "reformulas",
         "Title": "Machinery for Processing Random Effect Formulas",
@@ -6434,7 +6304,7 @@
     },
     "rematch": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rematch",
         "Title": "Match Regular Expressions with a Nicer 'API'",
@@ -6457,7 +6327,7 @@
     },
     "rematch2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rematch2",
         "Title": "Tidy Output from Regular Expression Matching",
@@ -6483,7 +6353,7 @@
     },
     "reprex": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "reprex",
         "Title": "Prepare Reproducible Example Code via the Clipboard",
@@ -6516,7 +6386,7 @@
     },
     "reshape2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "reshape2",
         "Title": "Flexibly Reshape Data: A Reboot of the Reshape Package",
@@ -6546,7 +6416,7 @@
     },
     "rhandsontable": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rhandsontable",
         "Type": "Package",
@@ -6573,7 +6443,7 @@
     },
     "rlang": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rlang",
         "Version": "1.3.0",
@@ -6607,7 +6477,7 @@
     },
     "rmarkdown": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "rmarkdown",
@@ -6638,7 +6508,7 @@
     },
     "rpart": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rpart",
         "Priority": "recommended",
@@ -6666,7 +6536,7 @@
     },
     "rstudioapi": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rstudioapi",
         "Title": "Safely Access the RStudio API",
@@ -6691,7 +6561,7 @@
     },
     "rvest": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "rvest",
         "Title": "Easily Harvest (Scrape) Web Pages",
@@ -6722,7 +6592,7 @@
     },
     "s2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "s2",
         "Title": "Spherical Geometry Operators Using the S2 Geometry Library",
@@ -6753,7 +6623,7 @@
     },
     "sandwich": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sandwich",
         "Version": "3.1-3",
@@ -6778,7 +6648,7 @@
     },
     "sass": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "sass",
@@ -6808,7 +6678,7 @@
     },
     "scales": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "scales",
         "Title": "Scale Functions for Visualization",
@@ -6838,7 +6708,7 @@
     },
     "scatterpie": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "scatterpie",
         "Title": "Scatter Pie Plot",
@@ -6863,7 +6733,7 @@
     },
     "selectr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "selectr",
         "Type": "Package",
@@ -6889,7 +6759,7 @@
     },
     "sf": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sf",
         "Version": "1.1-2",
@@ -6922,7 +6792,7 @@
     },
     "sftime": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sftime",
         "Title": "Classes and Methods for Simple Feature Objects that Have a Time\nColumn",
@@ -6951,7 +6821,7 @@
     },
     "shape": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "shape",
         "Version": "1.4.6.1",
@@ -6971,7 +6841,7 @@
     },
     "shiny": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "shiny",
@@ -7001,7 +6871,7 @@
     },
     "shinydashboard": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "shinydashboard",
         "Title": "Create Dashboards with 'Shiny'",
@@ -7026,7 +6896,7 @@
     },
     "shinyjs": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "shinyjs",
         "Title": "Easily Improve the User Experience of Your Shiny Apps in Seconds",
@@ -7053,7 +6923,7 @@
     },
     "snakecase": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "snakecase",
         "Version": "0.11.1",
@@ -7081,7 +6951,7 @@
     },
     "snow": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "snow",
         "Title": "Simple Network of Workstations",
@@ -7102,7 +6972,7 @@
     },
     "sourcetools": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sourcetools",
         "Type": "Package",
@@ -7128,7 +6998,7 @@
     },
     "sp": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sp",
         "Version": "2.2-3",
@@ -7155,7 +7025,7 @@
     },
     "spacetime": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "spacetime",
         "Version": "1.3-4",
@@ -7188,7 +7058,7 @@
     },
     "spam": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "spam",
         "Type": "Package",
@@ -7218,7 +7088,7 @@
     },
     "stars": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "stars",
         "Title": "Spatiotemporal Arrays, Raster and Vector Data Cubes",
@@ -7248,7 +7118,7 @@
     },
     "statmod": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "statmod",
         "Version": "1.5.2",
@@ -7272,7 +7142,7 @@
     },
     "stringi": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "stringi",
         "Version": "1.8.9",
@@ -7303,7 +7173,7 @@
     },
     "stringr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "stringr",
         "Title": "Simple, Consistent Wrappers for Common String Operations",
@@ -7334,7 +7204,7 @@
     },
     "survival": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Title": "Survival Analysis",
         "Priority": "recommended",
@@ -7400,7 +7270,7 @@
     },
     "sys": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "sys",
         "Type": "Package",
@@ -7427,7 +7297,7 @@
     },
     "systemfonts": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "systemfonts",
@@ -7461,7 +7331,7 @@
     },
     "textshaping": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "textshaping",
         "Title": "Bindings to the 'HarfBuzz' and 'Fribidi' Libraries for Text\nShaping",
@@ -7494,7 +7364,7 @@
     },
     "tibble": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tibble",
         "Title": "Simple Data Frames",
@@ -7530,7 +7400,7 @@
     },
     "tidydr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tidydr",
         "Title": "Unify Dimensionality Reduction Results",
@@ -7557,7 +7427,7 @@
     },
     "tidyr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tidyr",
         "Title": "Tidy Messy Data",
@@ -7590,7 +7460,7 @@
     },
     "tidyselect": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tidyselect",
         "Title": "Select from a Set of Strings",
@@ -7620,7 +7490,7 @@
     },
     "tidytree": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tidytree",
         "Title": "A Tidy Tool for Phylogenetic Tree Data Manipulation",
@@ -7647,7 +7517,7 @@
     },
     "tidyverse": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tidyverse",
         "Title": "Easily Install and Load the 'Tidyverse'",
@@ -7676,7 +7546,7 @@
     },
     "timeDate": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "timeDate",
         "Title": "Rmetrics - Chronological and Calendar Objects",
@@ -7701,7 +7571,7 @@
     },
     "timechange": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "timechange",
         "Title": "Efficient Manipulation of Date-Times",
@@ -7729,7 +7599,7 @@
     },
     "tinytex": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tinytex",
         "Type": "Package",
@@ -7788,7 +7658,7 @@
     },
     "tweedie": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tweedie",
         "Version": "3.1.0",
@@ -7816,7 +7686,7 @@
     },
     "tweenr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tweenr",
         "Type": "Package",
@@ -7845,7 +7715,7 @@
     },
     "tzdb": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "tzdb",
         "Title": "Time Zone Database Information",
@@ -7875,7 +7745,7 @@
     },
     "ucminf": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "ucminf",
         "Title": "General-Purpose Unconstrained Non-Linear Optimization",
@@ -7901,7 +7771,7 @@
     },
     "units": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "units",
         "Version": "1.0-1",
@@ -7932,7 +7802,7 @@
     },
     "urca": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "urca",
         "Version": "1.3-4",
@@ -7956,7 +7826,7 @@
     },
     "utf8": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "utf8",
         "Title": "Unicode Text Processing",
@@ -7984,7 +7854,7 @@
     },
     "uuid": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "uuid",
         "Version": "1.2-2",
@@ -8007,7 +7877,7 @@
     },
     "vctrs": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "vctrs",
         "Title": "Vector Helpers",
@@ -8041,7 +7911,7 @@
     },
     "vegan": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "vegan",
         "Title": "Community Ecology Package",
@@ -8067,7 +7937,7 @@
     },
     "viridisLite": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "viridisLite",
         "Type": "Package",
@@ -8094,7 +7964,7 @@
     },
     "vroom": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "vroom",
         "Title": "Read and Write Rectangular Text Data Quickly",
@@ -8130,7 +8000,7 @@
     },
     "withr": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "withr",
         "Title": "Run Code 'With' Temporarily Modified Global State",
@@ -8160,7 +8030,7 @@
     },
     "wk": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "wk",
         "Title": "Lightweight Well-Known Geometry Parsing",
@@ -8188,7 +8058,7 @@
     },
     "writexl": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "writexl",
         "Type": "Package",
@@ -8224,7 +8094,7 @@
     },
     "xfun": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "xfun",
         "Type": "Package",
@@ -8253,7 +8123,7 @@
     },
     "xml2": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "xml2",
         "Title": "Parse XML",
@@ -8285,7 +8155,7 @@
     },
     "xtable": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "xtable",
         "Version": "1.8-8",
@@ -8310,7 +8180,7 @@
     },
     "xts": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "xts",
         "Type": "Package",
@@ -8339,7 +8209,7 @@
     },
     "yaml": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Type": "Package",
         "Package": "yaml",
@@ -8368,7 +8238,7 @@
     },
     "yulab.utils": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "yulab.utils",
         "Title": "Supporting Functions for Packages Maintained by 'YuLab-SMU'",
@@ -8396,7 +8266,7 @@
     },
     "zip": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "zip",
         "Title": "Cross-Platform 'zip' Compression",
@@ -8427,7 +8297,7 @@
     },
     "zoo": {
       "Source": "CRAN",
-      "Repository": "https://mirrors.tuna.tsinghua.edu.cn/CRAN",
+      "Repository": "https://cloud.r-project.org",
       "description": {
         "Package": "zoo",
         "Version": "1.9-0",
@@ -8457,35 +8327,296 @@
     ".gitattributes": {
       "checksum": "05bdb783ee6514c8c072e47680af8ff7"
     },
+    ".playwright-mcp/page-2026-09-21T15-36-04-326Z.yml": {
+      "checksum": "f0ec9244dcf829132741b6208aa6f6a5"
+    },
+    ".scratch/curve_check.py": {
+      "checksum": "d1b75d16a4b03a2494f9c043b9886ec7"
+    },
+    ".scratch/curve_compare.png": {
+      "checksum": "217b803fabda3c17394143d0c3427cbc"
+    },
+    ".scratch/deriv_compare.png": {
+      "checksum": "d8d733303fb70431ac514876842a1541"
+    },
+    ".scratch/deriv_compare.py": {
+      "checksum": "c526e8b5992452b2faf6f430e89e8c68"
+    },
+    ".scratch/deriv_numbers.py": {
+      "checksum": "cb15e0b8911500ab69bd839652ec9bb3"
+    },
+    ".scratch/e2e/debug_diag.mjs": {
+      "checksum": "69decb50f4cbf4ef886d0a6e675c03f4"
+    },
+    ".scratch/e2e/debug_diag_out.txt": {
+      "checksum": "5c9e333eadbd004810e4892a0d3a5291"
+    },
+    ".scratch/e2e/debug_diag2_out.txt": {
+      "checksum": "756a592386102d6d8fccf66c080a75e3"
+    },
+    ".scratch/e2e/debug_dsf.mjs": {
+      "checksum": "2ea6749d4f2432b7ce1dcc5053cbf4ce"
+    },
+    ".scratch/e2e/debug_dsf_out.txt": {
+      "checksum": "590f04e10623519cf6f287537645853b"
+    },
+    ".scratch/e2e/debug_net.mjs": {
+      "checksum": "a43af2e3f3e334863252e41ac1371b54"
+    },
+    ".scratch/e2e/debug_net_out.txt": {
+      "checksum": "51932958d765a06f1cbb1ab1b69885b5"
+    },
+    ".scratch/e2e/debug_out.txt": {
+      "checksum": "dc31bf722a137058376a30072001fa5c"
+    },
+    ".scratch/e2e/debug_rnaseq.mjs": {
+      "checksum": "9b2c86fefe15dc92209a22f9c0496ee4"
+    },
+    ".scratch/e2e/debug_rnaseq_out.txt": {
+      "checksum": "5ea6c98e3b034c1d986e5e9393391376"
+    },
+    ".scratch/e2e/debug_rnaseq2.mjs": {
+      "checksum": "a155b124af0f133774e318f3e55bb1b0"
+    },
+    ".scratch/e2e/debug_rnaseq2_out.txt": {
+      "checksum": "23e3fc8f5a3370c32248d9733dabc6af"
+    },
+    ".scratch/e2e/debug_seq.mjs": {
+      "checksum": "37608d4728b9da69d0d304e5c06f2de3"
+    },
+    ".scratch/e2e/debug_seq_out.txt": {
+      "checksum": "055fd64a07a492ed35e96ae3f96c500c"
+    },
+    ".scratch/e2e/debug_sgrna.mjs": {
+      "checksum": "7e2586026f0d5c8f4659965d70c8163b"
+    },
+    ".scratch/e2e/debug_shrna.mjs": {
+      "checksum": "6d0d82eca64a0c35cb9450781be18662"
+    },
+    ".scratch/e2e/debug_shrna_out.txt": {
+      "checksum": "c24bcc54fc0e9e5deeda39eadb684f65"
+    },
+    ".scratch/e2e/debug_shrna2.mjs": {
+      "checksum": "7dfe699eb0681a45e1aac0e9267e7aa3"
+    },
+    ".scratch/e2e/debug_shrna2_out.txt": {
+      "checksum": "c95cbad955d16a3ad8feb6c884e91f06"
+    },
+    ".scratch/e2e/debug_syn.mjs": {
+      "checksum": "5470a8dab949498184a77bdd00c024f2"
+    },
+    ".scratch/e2e/debug_syn_out.txt": {
+      "checksum": "92c2624bc806763c26f840536aa57854"
+    },
+    ".scratch/e2e/debug_ws.mjs": {
+      "checksum": "03a6154af944bf5c7ac9e3c93a796219"
+    },
+    ".scratch/e2e/debug_ws_out.txt": {
+      "checksum": "c1d480c6c9e8e66f57efc7df06136685"
+    },
+    ".scratch/e2e/downloads/dna_convert.xlsx": {
+      "checksum": "b9b4f1c61bcd839612715770346feabb"
+    },
+    ".scratch/e2e/downloads/dsf_data.xlsx": {
+      "checksum": "42fc0d054da7560bf7f7f5da872425e5"
+    },
+    ".scratch/e2e/downloads/dsf_plots.zip": {
+      "checksum": "c846d5bfe55db775e91d5cef9b9ff72e"
+    },
+    ".scratch/e2e/downloads/rnaseq_dge_results.xlsx": {
+      "checksum": "642808997fca561f96a8370584ec6d02"
+    },
+    ".scratch/e2e/downloads/rnaseq_ora_results.xlsx": {
+      "checksum": "055830b51e21f7d4c6f6eef29678668e"
+    },
+    ".scratch/e2e/downloads/rtpcr_data.xlsx": {
+      "checksum": "70133e62941d7f8098629a6757dcfded"
+    },
+    ".scratch/e2e/downloads/rtpcr_plots.zip": {
+      "checksum": "ff04869906db428815abf774a87c3332"
+    },
+    ".scratch/e2e/downloads/scorenorm_data.xlsx": {
+      "checksum": "604c024135e1d956124458045601b911"
+    },
+    ".scratch/e2e/downloads/scorenorm_plots.zip": {
+      "checksum": "9e1ce9d45f29a11c6c4f97cd69942385"
+    },
+    ".scratch/e2e/downloads/sgrna_primers.xlsx": {
+      "checksum": "027adaa9e0b57cd97842152858d3fefe"
+    },
+    ".scratch/e2e/downloads/synergy_data.xlsx": {
+      "checksum": "7aaa8abef97268e0aa5cdb38b3c31d87"
+    },
+    ".scratch/e2e/downloads/synergy_plots.zip": {
+      "checksum": "3c486ff87fe3971093835c3f9c6146de"
+    },
+    ".scratch/e2e/final_1.txt": {
+      "checksum": "9d4465a0f8cd034ac5a52448ad5c84af"
+    },
+    ".scratch/e2e/final_2.txt": {
+      "checksum": "ebd878b77df9e300fc28376f9ed67155"
+    },
+    ".scratch/e2e/helper.mjs": {
+      "checksum": "bd6e4ef8c85923dbac9c931759c40ece"
+    },
+    ".scratch/e2e/out_full_1.txt": {
+      "checksum": "edf360b65c89beef17a52aabf3afc714"
+    },
+    ".scratch/e2e/out_full_2.txt": {
+      "checksum": "535b5af5d0260f840dc894c938bbbde4"
+    },
+    ".scratch/e2e/out_full_3.txt": {
+      "checksum": "14e3fc46dc1deb2e67c2d08ee1fbf74f"
+    },
+    ".scratch/e2e/out_rtpcr_dsf.txt": {
+      "checksum": "16bfd18374d58d1cd4f9bddabafbd36a"
+    },
+    ".scratch/e2e/out_shrna_rna.txt": {
+      "checksum": "d1a187802001518922db0c14e70ea8a4"
+    },
+    ".scratch/e2e/out_syn_rna.txt": {
+      "checksum": "3f8bcae90449fb658c7f3fd1c018f085"
+    },
+    ".scratch/e2e/out_syn_rna2.txt": {
+      "checksum": "f784b34b90ec0dd678d5f0b03ec0bfda"
+    },
+    ".scratch/e2e/package-lock.json": {
+      "checksum": "76bc89a6dd03991b4abdc56d0762d551"
+    },
+    ".scratch/e2e/package.json": {
+      "checksum": "eeb201c0656b94f6664eb2d347a10b3a"
+    },
+    ".scratch/e2e/shots/debug_dsf.png": {
+      "checksum": "4ffce117d9c6e8a33da90c49cf262ca0"
+    },
+    ".scratch/e2e/shots/debug_rnaseq_qc.png": {
+      "checksum": "0b0c2340dd30d993bf4d30d7e0e2cd26"
+    },
+    ".scratch/e2e/shots/debug_rnaseq2.png": {
+      "checksum": "0b0c2340dd30d993bf4d30d7e0e2cd26"
+    },
+    ".scratch/e2e/shots/debug_shrna.png": {
+      "checksum": "6688814c2d6dd7fb15fd95a89f186cef"
+    },
+    ".scratch/e2e/shots/debug_shrna2.png": {
+      "checksum": "6688814c2d6dd7fb15fd95a89f186cef"
+    },
+    ".scratch/e2e/shots/debug_synergy.png": {
+      "checksum": "efdd610dc775c7fdd75755300cc4a0f2"
+    },
+    ".scratch/e2e/shots/dna_convert.png": {
+      "checksum": "01301cecbe8dd48b456b665006ab926d"
+    },
+    ".scratch/e2e/shots/dsf_curves.png": {
+      "checksum": "19752ebea5f45cb25eee2e4e8b2c321c"
+    },
+    ".scratch/e2e/shots/rnaseq_dge.png": {
+      "checksum": "b0a84c63ff555d274248b69635bbdb69"
+    },
+    ".scratch/e2e/shots/rnaseq_ora.png": {
+      "checksum": "5b1525ceee4a4a687157a2e97d0d8255"
+    },
+    ".scratch/e2e/shots/rnaseq_qc.png": {
+      "checksum": "87de2e1c92b0b741aee9cf08907cdf3c"
+    },
+    ".scratch/e2e/shots/rtpcr_meltcurves.png": {
+      "checksum": "7eb82e802611e68cf00299df325bacac"
+    },
+    ".scratch/e2e/shots/scorenorm.png": {
+      "checksum": "81a7089852e99cb8fc996fc3e16e12e9"
+    },
+    ".scratch/e2e/shots/sgrna.png": {
+      "checksum": "249ca3377f322842e3dd079cd6f33a9a"
+    },
+    ".scratch/e2e/shots/synergy.png": {
+      "checksum": "cfe14aa153077c90530c8121819d0d7e"
+    },
+    ".scratch/e2e/test_dna_scorenorm_sgrna.mjs": {
+      "checksum": "5a1d9245960500cb96bcd01b1a07d686"
+    },
+    ".scratch/e2e/test_rtpcr_dsf.mjs": {
+      "checksum": "2782ffa497e75b5160164b39299cada8"
+    },
+    ".scratch/e2e/test_shrna_rnaseq.mjs": {
+      "checksum": "8707a495294a61f029bc6588494db9e6"
+    },
+    ".scratch/e2e/test_synergy_rnaseq_shrna.mjs": {
+      "checksum": "93cf91099d27e80b8ad19e5100b0e7bd"
+    },
+    ".scratch/fix_dsf_final.R": {
+      "checksum": "81c239fb04baa1f3b98b3622f042b480"
+    },
+    ".scratch/gen_dsf_meta.R": {
+      "checksum": "4b5c1e6b8730dfd362a2118248826562"
+    },
+    ".scratch/inst_compare.py": {
+      "checksum": "69f1e483ece375e0dd0d17402a93c4c4"
+    },
+    ".scratch/plot_check.py": {
+      "checksum": "66e1671812fcf33efd6cd783dc44cf6a"
+    },
+    ".scratch/testdata/20260921_DemoDSF_AnalysisResults.txt": {
+      "checksum": "b918bdb518689673339beb1857b1fbd5"
+    },
+    ".scratch/testdata/20260921_DemoDSF_RawData_20260921_DemoDSF.eds.txt": {
+      "checksum": "133f8b13107811fb2a936503ea5633b1"
+    },
+    ".scratch/testdata/20260921_DemoDSF_RawData_20260921_DemoDSF.eds.xlsx": {
+      "checksum": "6bd3c72526977b56025b39fec659827a"
+    },
+    ".scratch/testdata/qpcr_demo_20260920.xlsx": {
+      "checksum": "ab6c15619f85bf0efc4ab833794cc87e"
+    },
+    ".scratch/testdata/synergy_demo.csv": {
+      "checksum": "60803dc5255559d873d2364648ffe950"
+    },
+    ".scratch/tm_rows.json": {
+      "checksum": "af55be1df8891bf92ad47eeec460a252"
+    },
+    ".scratch/tm_rows3.json": {
+      "checksum": "2f4bad53b07e90f66da7b158b49df3aa"
+    },
+    ".scratch/tm_validation.py": {
+      "checksum": "885b41250986e1307872bac09d724680"
+    },
+    ".scratch/tm_validation2.py": {
+      "checksum": "ba855efe46e0922db2beb60fde53c49f"
+    },
+    ".scratch/tm_validation3.py": {
+      "checksum": "024e530dbcfb91f61b17f7026625f57b"
+    },
     "app.R": {
-      "checksum": "acfdb0c3f7bc4d095f6fc7b262014359"
+      "checksum": "c09e17e44aa08098a1daca21222fad90"
     },
     "LICENSE": {
       "checksum": "768518fb1880e71abc16e4b1f6380513"
     },
+    "R/mod_dna_convert.R": {
+      "checksum": "c6b90c1586086d95f9b66515f43a8fc0"
+    },
     "R/mod_dsf.R": {
-      "checksum": "774652b0c6f0eefb04ad30b298afae46"
+      "checksum": "cb2fe4c41d541057bb65efb3fac3b37c"
     },
     "R/mod_rnaseq.R": {
-      "checksum": "32db61314cdce220cbd46f108fdd0fe4"
+      "checksum": "6484b95fd15e384e119a64f36c5be318"
     },
     "R/mod_rtpcr.R": {
-      "checksum": "7b3651cf3fa414cd0f35d6ee81c9d9f4"
+      "checksum": "61a66ae6dc540b5669eda4c6c9d8fa23"
     },
     "R/mod_scorenorm.R": {
-      "checksum": "4f8229dcd38e1e549bd80ccabfbe25f7"
+      "checksum": "2a7cf70fc7fba86e767a82e367eba192"
     },
     "R/mod_sgrna.R": {
-      "checksum": "96314543d46be0d069832a1aec37c43d"
+      "checksum": "3beaa571b6468dbe5d10b14b65e46acc"
     },
     "R/mod_shrna.R": {
-      "checksum": "a6a62d500b53b7db5b138f9c17b88aa5"
+      "checksum": "ad624ff53abfff965befe959efe677bf"
     },
     "R/mod_synergy.R": {
-      "checksum": "582f8daf76d2949f68e94dc7982dffbd"
+      "checksum": "6c484a49976f9521197941d24ea2536f"
     },
     "R/utils.R": {
-      "checksum": "d0b2d29dd4417ff9fc35c093ca556fb8"
+      "checksum": "3c470b95c6f1a838bf56fb37686cc1b9"
     },
     "README.md": {
       "checksum": "b4164399cde3ab4321dbd8360fde33db"
@@ -8495,6 +8626,9 @@
     },
     "rnaseq_example_data/example_metadata.xlsx": {
       "checksum": "3ea20d655e30cc0447cecba774cd8cfb"
+    },
+    "Rplots.pdf": {
+      "checksum": "7ef820ea274d9d42b55c6a0e4b524ca5"
     }
   },
   "users": null

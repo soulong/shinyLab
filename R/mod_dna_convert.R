@@ -51,13 +51,10 @@ dnaConvertUI <- function(id) {
           height = "220px"),
         checkboxInput(ns("u2t"), "Convert U -> T (treat input as DNA)", value = TRUE),
         checkboxInput(ns("t2u"), "Convert T -> U (output as RNA)", value = FALSE),
-        helpText(icon("info-circle"),
-                 " One sequence per line. Characters other than IUPAC nucleotide codes ",
-                 tags$code("ACGTURYSWKMBDHVN"), " are ignored."),
-        hr(),
-        downloadButton(ns("download_csv"), "Download CSV", icon = icon("file-csv")),
-        br(), br(),
-        downloadButton(ns("download_xlsx"), "Download Excel", icon = icon("file-excel"))
+        helpText("IUPAC nucleotide codes only; other characters are ignored.",
+                 hint_tip("Accepted: A C G T U R Y S W K M B D H N (case-insensitive). Digits, whitespace and symbols are stripped before conversion. U->T and T->U are mutually exclusive: U->T treats the input as DNA, T->U returns RNA (complement A <-> U).")),
+        downloadButton(ns("download_xlsx"), "Results (xlsx)", icon = icon("table"),
+                       title = "Input, length, reverse, complement and reverse complement, one row per input line.")
       )
     ),
     column(width = 8,
@@ -91,7 +88,7 @@ dnaConvertServer <- function(id) {
       lines <- lines[nzchar(lines)]
 
       if (length(lines) == 0) {
-        return(tibble(input = character(), reverse = character(),
+        return(tibble(input = character(), nt = integer(), reverse = character(),
                       complement = character(), `reverse complement` = character()))
       }
 
@@ -104,6 +101,7 @@ dnaConvertServer <- function(id) {
 
       tibble(
         input = lines,
+        nt = nchar(seqs),
         reverse = seq_reverse(seqs),
         complement = comp,
         `reverse complement` = seq_reverse(comp)
@@ -130,25 +128,17 @@ dnaConvertServer <- function(id) {
     output$result_table <- DT::renderDataTable({
       res <- result()
       DT::datatable(res, rownames = FALSE,
-                    colnames = c("Input", "Reverse", "Complement", "Reverse Complement"),
+                    colnames = c("Input", "nt", "Reverse", "Complement", "Reverse Complement"),
                     options = list(pageLength = 25, scrollX = TRUE,
                                    dom = "ltip", searching = FALSE)) %>%
         DT::formatStyle(columns = colnames(res), fontFamily = "Consolas, monospace")
     })
 
-    output$download_csv <- downloadHandler(
-      filename = function() paste0("DNA_convert_", Sys.Date(), ".csv"),
-      content = function(file) {
-        req(nrow(result()) > 0)
-        write.csv(result(), file, row.names = FALSE, fileEncoding = "UTF-8", quote = TRUE)
-      }
-    )
-
     output$download_xlsx <- downloadHandler(
-      filename = function() paste0("DNA_convert_", Sys.Date(), ".xlsx"),
+      filename = function() paste0("DNAconvert_", Sys.Date(), "_results.xlsx"),
       content = function(file) {
         req(nrow(result()) > 0)
-        writexl::write_xlsx(result(), file)
+        write_xlsx_sheets(list(Results = result()), file)
       }
     )
   })

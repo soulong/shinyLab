@@ -35,7 +35,7 @@ The app listens on `http://127.0.0.1:5005` (configured in `app.R`); a browser wi
 - R packages (all directly used by the code):
 
 **Base / UI**
-- shiny, shinydashboard, tidyverse (includes ggplot2, dplyr, tidyr, readr, stringr, purrr, tibble, forcats), magrittr, DT, shinyjs, plotly
+- shiny, shinydashboard, tidyverse (includes ggplot2, dplyr, tidyr, readr, stringr, purrr, tibble, forcats), magrittr, DT, shinyjs
 
 **Real-time PCR**
 - readxl, writexl, janitor
@@ -70,7 +70,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install(c(
   "shiny", "shinydashboard", "tidyverse", "magrittr", "patchwork",
   "writexl", "readxl", "janitor", "httr", "rvest",
-  "zip", "mgcv", "gratia", "DT", "shinyjs", "plotly",
+  "zip", "mgcv", "gratia", "DT", "shinyjs",
   "corrplot", "ggforce", "ggrepel", "future", "furrr", "matrixStats",
   "Biostrings", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db",
   "DESeq2", "ashr", "clusterProfiler", "msigdbr", "enrichplot",
