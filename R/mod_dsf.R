@@ -64,9 +64,11 @@ read_fluorescence_table <- function(file) {
 # QuantStudio stores the melt derivative as -dF/dT; it is negated here so every
 # curve in the app is plain dF/dT with the transition as a positive peak. The
 # instrument's own peak calls (meltResult$peaks, ordered by confidence) often
-# sit on minor tail wiggles in protein-melt runs, so Tm is called from the
-# steepest point of the derivative instead, falling back to the instrument
-# value (peak 1, percentage == 100) only when no derivative is available.
+# sit on minor tail wiggles in protein-melt runs, so Tm is called at the most
+# prominent peak/trough of the derivative instead (ungated here - the Tm gate
+# applies when the module re-calls it per the UI control), falling back to the
+# instrument value (peak 1, percentage == 100) only when no derivative is
+# available.
 eds_experiment_from_dir <- function(td, eds_name) {
   get_json <- function(rel) jsonlite::fromJSON(file.path(td, rel), simplifyVector = TRUE)
 
@@ -124,10 +126,13 @@ eds_experiment_from_dir <- function(td, eds_name) {
     } else {
       rep(NA_real_, length(rnT))
     }
-    # call Tm from the steepest point of the derivative (the visible main
-    # peak); the instrument's meltT often misses it in protein-melt runs
+    # call Tm at the most prominent peak/trough of the derivative (the
+    # visible main transition; range edges are trimmed inside
+    # refine_extremum). Ungated here - the Tm gate control applies when the
+    # module re-calls it for display; the instrument's meltT often misses
+    # the main peak in protein-melt runs
     if (any(is.finite(deriv))) {
-      res_rows[[i]]$tm <- refine_extremum(rnT, deriv)
+      res_rows[[i]]$tm <- refine_extremum(rnT, deriv, gate = 0)
     }
     mc_rows[[i]] <- data.frame(
       plate = plate_name, well = w,
@@ -253,23 +258,59 @@ compute_derivatives <- function(mc_tidy, k = 10, grid_step = 0.1) {
     filter(!is.na(derivative))
 }
 
-# Sub-grid Tm from the derivative: grid extremum refined by fitting a parabola
-# through the neighbouring points (precision far below the grid step). The
-# main transition is where fluorescence changes fastest, i.e. the derivative
-# extremum of largest magnitude - this covers classic rising SYPRO Orange
-# curves (positive peak) and quenching-style falling curves (trough) alike.
-refine_extremum <- function(t, d) {
+# Sub-grid Tm from the derivative: the main transition is the LOCAL EXTREMUM
+# OF LARGEST PROMINENCE of dF/dT - the peak or trough that rises furthest
+# above the surrounding curve. Prominence (not magnitude) is what makes this
+# robust: on a rising melt the post-melt decay can be steeper than the
+# transition itself, but its wiggles hug the falling baseline, so the true
+# peak still wins. Quenching-style falling curves are covered automatically,
+# since their transition is the prominent trough. A winner must also stand
+# out from the ambient |dF/dT| level (at least `gate` times the median; a
+# gate of 0 or NA disables the check): a steady rise or decay with no
+# cooperative transition has no such feature and reports no Tm.
+# The first/last `trim` degrees are excluded, since both the instrument
+# derivative and the GAM fits carry large unphysical spikes at range edges.
+refine_extremum <- function(t, d, trim = 5, gate = 1.2) {
   t <- as.numeric(t); d <- as.numeric(d)
   if (!length(d) || all(is.na(d))) return(NA_real_)
-  i_min <- which.min(d); i_max <- which.max(d)
-  i <- if (abs(d[i_min]) >= abs(d[i_max])) i_min else i_max
-  if (length(i) == 0 || is.na(i) || i == 0) return(NA_real_)
-  if (i <= 1 || i >= length(d)) return(t[i])
-  d0 <- d[i - 1]; d1 <- d[i]; d2 <- d[i + 1]
+  keep <- which(!is.na(t) & !is.na(d))
+  if (!length(keep)) return(NA_real_)
+  t <- t[keep]; d <- d[keep]
+  if (is.finite(trim) && trim > 0) {
+    in_rng <- t > min(t) + trim & t < max(t) - trim
+    if (sum(in_rng) >= 3L) { t <- t[in_rng]; d <- d[in_rng] }
+  }
+  n <- length(d)
+  if (n < 3L) return(NA_real_)
+  # interior local extrema; strict on the left so a tied run counts once
+  peaks <- which(d[2:(n - 1L)] > d[1:(n - 2L)] & d[2:(n - 1L)] >= d[3:n]) + 1L
+  troughs <- which(d[2:(n - 1L)] < d[1:(n - 2L)] & d[2:(n - 1L)] <= d[3:n]) + 1L
+  if (!length(peaks) && !length(troughs)) return(NA_real_)
+  # prominence of one extremum: its height above the higher of the two
+  # saddles crossed when walking away from it (up to higher terrain or the
+  # range edge)
+  prom <- function(x, i) {
+    h <- x[i]; lmin <- h
+    if (i > 1L) for (j in (i - 1L):1L) { if (x[j] > h) break; lmin <- min(lmin, x[j]) }
+    rmin <- h
+    if (i < n)  for (j in (i + 1L):n)  { if (x[j] > h) break; rmin <- min(rmin, x[j]) }
+    h - max(lmin, rmin)
+  }
+  cand <- sort(union(peaks, troughs))
+  p <- vapply(cand, function(i) if (i %in% peaks) prom(d, i) else prom(-d, i),
+              numeric(1))
+  w <- cand[which.max(p)]
+  # a real transition is steeper than the ambient slope of the trace; on a
+  # steady rise/decay the most prominent wiggle merely rides on that slope,
+  # and the honest result is no Tm (gate 0 / NA disables the check)
+  if (is.finite(gate) && gate > 0 && abs(d[w]) < gate * median(abs(d)))
+    return(NA_real_)
+  if (w <= 1L || w >= n) return(t[w])
+  d0 <- d[w - 1L]; d1 <- d[w]; d2 <- d[w + 1L]
   den <- d0 - 2 * d1 + d2
   delta <- if (!is.finite(den) || den == 0) 0 else 0.5 * (d0 - d2) / den
   delta <- min(1, max(-1, delta))
-  t[i] + delta * (t[i + 1] - t[i])
+  t[w] + delta * (t[w + 1L] - t[w])
 }
 
 # Smooth a fluorescence curve table for DISPLAY: a loess fit per well,
@@ -318,7 +359,7 @@ thin_display <- function(tbl, value = "fluorescence", n_bins = 200) {
     group_by(plate, well, .bin) %>%
     filter(.data[[value]] %in% range(.data[[value]])) %>%
     ungroup() %>%
-    select(-.bin)
+    dplyr::select(-.bin)
 }
 
 # Combined key over one or more columns ("PK1 | DMSO"). With collapse_na the
@@ -552,10 +593,13 @@ dsfUI <- function(id) {
         helpText("Optional target/ligand/etc. annotations per well.",
                  hint_tip("Name the file after its raw-data file (e.g. '...RawData_<plate>.eds.xlsx' for '...RawData_<plate>.eds.txt', or '<experiment>.xlsx' for '<experiment>.eds') so annotations are assigned to the correct plate - preferred for multi-plate runs. A name matching the AnalysisResults file assigns it to the single plate; if nothing matches, annotations apply to all plates by well. Each sheet name becomes a well-annotation column ('target' and 'ligand' required; optional 'conc', 'smiles'). Fill every sheet with 384-well values in range B2:Y17. Without a metadata file, the export's own annotations are used: Protein/Ligand properties for .txt uploads, or the sample name (as ligand) and target for .eds uploads. Wells left empty in a sheet keep NA for that annotation and stay out of groups keyed on it (e.g. protein-only controls with an empty 'ligand' cell).")),
         radioButtons(ns("tm_type"), tagList("Tm Calculation",
-                     hint_tip("Derivative / Boltzmann: Tm values from the uploaded files (txt exports carry both; for .eds files Tm is picked at the steepest point of the instrument derivative, since the instrument's own peak calls can miss the main transition of protein-melt runs). App dF/dT: Tm computed inside the app - the loaded curves are GAM-smoothed (see Curve detail below) and Tm is the temperature of the steepest fluorescence change (the |dF/dT| maximum, main transition); bundled Tm columns are ignored.")),
+                     hint_tip("Derivative / Boltzmann: Tm values from the uploaded files (txt exports carry both; for .eds files Tm is picked at the most prominent peak/trough of the instrument derivative - the feature that rises furthest above the surrounding curve - since the instrument's own peak calls can miss the main transition of protein-melt runs). Both derivative-based sources ignore the first/last 5 \u00b0C of the temperature range, where the traces carry edge spikes, and only call a Tm when the feature stands out from the ambient dF/dT level (threshold: the 'Tm gate' control below; traces with a steady rise or decay but no cooperative transition report no Tm). App dF/dT: Tm computed inside the app - the loaded curves are GAM-smoothed (see Curve detail below) and Tm is the most prominent peak/trough of that smoothed dF/dT; bundled Tm columns are ignored.")),
                      choices = c("Derivative" = "tm_d", "Boltzmann" = "tm_b",
                                  "App dF/dT" = "app_dfdt"),
                      selected = "app_dfdt", inline = TRUE),
+        numericInput(ns("tm_gate"), tagList("Tm gate (\u00d7 ambient dF/dT)",
+                     hint_tip("A Tm is only called when the prominent peak/trough exceeds the ambient |dF/dT| level (per-trace median) by this factor: higher values call only clear transitions, lower values also call weak ones, 0 disables the check (every well with any prominent feature gets a Tm). Applies to both Derivative and App dF/dT sources; changes apply immediately, no re-Analyze needed. Default 1.2.")),
+                     value = 1.2, min = 0, max = 100, step = 0.1),
         conditionalPanel(
           condition = "input.tm_type === 'app_dfdt'",
           ns = ns,
@@ -569,8 +613,8 @@ dsfUI <- function(id) {
           div(style = "display: flex; gap: 4px; flex-wrap: nowrap;",
             downloadButton(ns("download_data"), "Data", icon = icon("table"), class = "btn-default btn-sm",
                            title = "Per-well results, Tm summary, metadata, raw fluorescence and derivatives as one .xlsx, one sheet each."),
-            downloadButton(ns("download_plots"), "Plots", icon = icon("file-pdf"), class = "btn-default btn-sm",
-                           title = "All groups as vector PDFs (one page per group: raw fluorescence + derivative side by side), plus a combined multi-page PDF, zipped.")))
+            downloadButton(ns("download_plots"), "Plots", icon = icon("file-image"), class = "btn-default btn-sm",
+                           title = "Per-target vector PDFs (one fixed-size page per ligand: RFU left, dF/dT right; ligand wells dark blue, reference grey; dashed lines mark the ligand Tm (labelled) and the reference Tm; the title reports Tm and delta Tm) plus a Delta Tm overview PDF, zipped. Falls back to per-group pages when target/ligand annotations are absent.")))
       ),
       box(title = "Plot Settings", width = NULL, status = "primary", solidHeader = TRUE,
           collapsible = TRUE,
@@ -710,7 +754,17 @@ dsfServer <- function(id) {
                 stop("The AnalysisResults file has no 'Well' column.")
               }
 
-              tm_col <- resolve_tm_column(res, input$tm_type)
+              # App dF/dT recomputes Tm from the curves, so a missing or
+              # unparseable bundled Tm column is not fatal in that mode.
+              app_tm <- identical(input$tm_type, "app_dfdt")
+              tm_col <- tryCatch(
+                resolve_tm_column(res, if (app_tm) "tm_d" else input$tm_type),
+                error = function(e) {
+                  if (!app_tm) stop(e)
+                  showNotification("App dF/dT is selected - Tm is computed from the curves; no bundled Tm column is needed.",
+                                   type = "message", duration = 8)
+                  structure(NA_character_, matched = "none")
+                })
               if (identical(attr(tm_col, "matched"), "fallback")) {
                 showNotification(paste0("Requested Tm method column not found - falling back to column '", tm_col, "'."),
                                  type = "warning", duration = 8)
@@ -718,8 +772,11 @@ dsfServer <- function(id) {
 
               # Plate name: QuantStudio exports 'Experiment File Name'; fall back
               # to the results file name (e.g. '<plate>.eds_AnalysisResults.txt').
+              # Some exports also carry a numeric 'Plate' column - drop it first
+              # so the rename cannot collide into duplicated names.
               if ("experiment_file_name" %in% colnames(res)) {
-                res <- res %>% dplyr::rename(plate = experiment_file_name)
+                res <- res %>% dplyr::select(-any_of("plate")) %>%
+                  dplyr::rename(plate = experiment_file_name)
               } else {
                 fallback_plate <- res_name %>%
                   str_remove("_?AnalysisResults\\.txt$") %>% str_remove("\\.eds$")
@@ -729,11 +786,13 @@ dsfServer <- function(id) {
               }
 
               res <- res %>%
-                mutate(tm = suppressWarnings(as.numeric(.data[[tm_col]])),
+                mutate(tm = if (!is.na(tm_col))
+                         suppressWarnings(as.numeric(.data[[tm_col]]))
+                       else NA_real_,
                        well = transform_well_style(well),
                        plate = str_remove(plate, "\\.eds$"))
 
-              if (all(is.na(res$tm))) {
+              if (all(is.na(res$tm)) && !app_tm) {
                 stop(paste0("Tm column '", tm_col, "' could not be parsed as numeric."))
               }
 
@@ -847,7 +906,7 @@ dsfServer <- function(id) {
                                  type = "warning", duration = 8)
                 merged <- res_all %>%
                   dplyr::select(-any_of(c("protein", "target", "ligand", "conc", "smiles"))) %>%
-                  inner_join(meta %>% select(-any_of("plate")), by = "well")
+                  inner_join(meta %>% dplyr::select(-any_of("plate")), by = "well")
               } else if (!setequal(unique(res_all$plate), unique(meta$plate))) {
                 # Plates the metadata does not cover keep their export
                 # annotations instead of being silently dropped by the join.
@@ -1049,17 +1108,34 @@ dsfServer <- function(id) {
     merged_tm <- reactive({
       d <- data()
       req(d)
-      if (!identical(input$tm_type, "app_dfdt")) return(d$merged)
-      withProgress(message = "Calling Tm from app dF/dT...", value = 0.5, {
-        sd <- smooth_derivatives()
-        tm_by_well <- sd %>%
+      gate <- suppressWarnings(as.numeric(input$tm_gate))
+      if (is.na(gate)) gate <- 1.2
+      if (identical(input$tm_type, "app_dfdt")) {
+        withProgress(message = "Calling Tm from app dF/dT...", value = 0.5, {
+          sd <- smooth_derivatives()
+          tm_by_well <- sd %>%
+            group_by(plate, well) %>%
+            summarise(tm = round(refine_extremum(temperature, derivative, gate = gate), 2),
+                      .groups = "drop")
+          d$merged %>%
+            dplyr::select(-tm) %>%
+            left_join(tm_by_well, by = c("plate", "well")) %>%
+            relocate(tm, .after = last_col())
+        })
+      } else {
+        # .eds wells carry the instrument derivative, so their Tm is re-called
+        # live under the current gate (no re-Analyze needed); wells without
+        # derivative data (.txt uploads) keep their uploaded Tm columns
+        tm_by_well <- d$mc_tidy %>%
+          filter(!is.na(derivative)) %>%
           group_by(plate, well) %>%
-          summarise(tm = round(refine_extremum(temperature, derivative), 2), .groups = "drop")
+          summarise(tm = round(refine_extremum(temperature, derivative, gate = gate), 2),
+                    .groups = "drop")
         d$merged %>%
-          dplyr::select(-tm) %>%
-          left_join(tm_by_well, by = c("plate", "well")) %>%
-          relocate(tm, .after = last_col())
-      })
+          left_join(tm_by_well, by = c("plate", "well"), suffix = c("", ".re")) %>%
+          mutate(tm = dplyr::coalesce(tm.re, tm)) %>%
+          dplyr::select(-tm.re)
+      }
     })
 
     # curve table with the matching tm column (used when grouping/coloring by tm)
@@ -1593,11 +1669,17 @@ dsfServer <- function(id) {
     )
 
     # =========================================================================
-    # Download Plots: editable vector PDF, one page per group
-    # (raw fluorescence + derivative side by side), zipped. Mirrors the
-    # on-screen row view: current well filter, smoothed curves, reference
-    # overlay (with match-by-target), the dF/dT median-Tm marker lines and
-    # the full row header (median / ref Tm / delta Tm) as the page title.
+    # Download Plots. Zip with two output families (when the data carries
+    # target/ligand annotations):
+    #   DeltaTm_overview.pdf  one page per target: each ligand's delta Tm vs
+    #                         the reference (wells in blue, median in black)
+    #   Plots_<target>.pdf    one fixed-size page per ligand: RFU left, dF/dT
+    #                         right, all wells of the ligand in dark blue, the
+    #                         reference in grey, dashed median-Tm marker, the
+    #                         combined Tm in the page title
+    # Mirrors the on-screen view: current well filter, smoothing, reference
+    # overlay (with match-by-target) and temperature range all apply. Without
+    # target/ligand annotations the previous per-group export is used instead.
     # =========================================================================
     build_pdf_page <- function(g, cols, key_raw, key_deri, ref_raw, ref_deri,
                                mc_df, deri_df, color_var, temp_range, title) {
@@ -1632,6 +1714,116 @@ dsfServer <- function(id) {
       content = function(file) {
         req(data())
 
+        mc_df <- mc_plot()
+        deri_df <- deri_plot()
+        if (!nrow(mc_df) || !nrow(deri_df)) {
+          showNotification("No curves available to plot.", type = "error", duration = 8)
+          return(NULL)
+        }
+        mt <- merged_filt()                      # per-well results, current filter
+        has_tl <- all(c("target", "ligand") %in% colnames(mt)) &&
+          all(c("target", "ligand") %in% colnames(mc_df))
+
+        # ---- helpers for the per-target / delta-Tm export -----------------
+        # Reference curves for one target: match-by-target when enabled,
+        # otherwise the full reference set; NULL when this page IS the
+        # reference ligand (its own grey overlay would double-draw it).
+        ref_rows_for_target <- function(rd_full, tgt, lg) {
+          if (is.null(rd_full) || !nrow(rd_full)) return(NULL)
+          rd <- ref_def()
+          if (!is.null(rd)) {
+            i <- which(rd$cols == "ligand")
+            if (length(i) == 1 && identical(rd$vals[[i]], lg)) return(NULL)
+          }
+          if (isTRUE(input$overlay_by_target) && "target" %in% colnames(rd_full)) {
+            out <- rd_full[!is.na(rd_full$target) & rd_full$target == tgt, , drop = FALSE]
+            if (!nrow(out)) return(NULL)
+            out
+          } else rd_full
+        }
+        nat_lig_order <- function(lgs) {
+          ls <- unique(lgs)
+          ord <- stringr::str_sort(ls, numeric = TRUE, locale = "en")
+          if ("DMSO" %in% ls) ord <- c("DMSO", setdiff(ord, "DMSO"))
+          ord
+        }
+        # one page per ligand: RFU left, dF/dT right; every replicate of the
+        # ligand group in one dark blue, the reference in grey. The dF/dT
+        # panel marks the ligand's median Tm (dashed, labelled) and the
+        # reference Tm (dotdash); the title reports Tm and delta Tm. Without
+        # a reference for the target, every reference element is skipped.
+        plot_ligand_page <- function(tgt, lg, tm_med, delta, ref_tm, tr) {
+          rows <- mc_df %>% filter(.data$target == !!tgt, .data$ligand == !!lg)
+          dvs  <- deri_df %>% filter(.data$target == !!tgt, .data$ligand == !!lg)
+          if (!nrow(rows) || !nrow(dvs)) return(NULL)
+          ref_r <- ref_rows_for_target(mc_ref_rows_display(), tgt, lg)
+          ref_d <- ref_rows_for_target(deri_ref_rows(), tgt, lg)
+          has_ref <- is.finite(ref_tm)
+          ttl <- paste0(tgt, " \u2014 ", lg)
+          if (is.finite(tm_med)) {
+            ttl <- paste0(ttl, "   (Tm ", sprintf("%.1f", tm_med), " \u00b0C")
+            if (has_ref)
+              ttl <- paste0(ttl, ", \u0394Tm ", sprintf("%+.1f", tm_med - ref_tm), " \u00b0C")
+            ttl <- paste0(ttl, ")")
+          }
+          pth <- function(df, y, col, wd) {
+            geom_path(data = df,
+                      mapping = aes(x = .data$temperature, y = .data[[y]],
+                                    group = interaction(plate, well)),
+                      colour = col, linewidth = wd, na.rm = TRUE)
+          }
+
+          p_fl <- ggplot() +
+            { if (!is.null(ref_r)) pth(ref_r, "fluorescence", "grey60", 0.35) } +
+            pth(rows, "fluorescence", "#08519C", 0.45) +
+            labs(title = ttl, x = NULL, y = "RFU") +
+            { if (length(tr) == 2 && !anyNA(tr)) coord_cartesian(xlim = tr) } +
+            theme_bw(base_size = 10) +
+            theme(plot.title = element_text(face = "bold", size = 13),
+                  axis.text.x = element_blank(), axis.ticks.x = element_blank())
+          p_dv <- ggplot() +
+            { if (!is.null(ref_d)) pth(ref_d, "derivative", "grey60", 0.35) } +
+            pth(dvs, "derivative", "#08519C", 0.45) +
+            { if (has_ref) geom_vline(xintercept = ref_tm, linetype = "longdash",
+                                      colour = "grey45", linewidth = 0.4) } +
+            { if (is.finite(tm_med)) list(
+                geom_vline(xintercept = tm_med, linetype = "dashed",
+                           colour = "#08519C", linewidth = 0.4),
+                geom_text(data = data.frame(x = tm_med),
+                          aes(x = x, y = Inf, label = sprintf("%.1f", tm_med)),
+                          inherit.aes = FALSE, vjust = 1.4, hjust = -0.08,
+                          size = 3.4, colour = "#08519C")) } +
+            labs(x = "Temperature (\u00b0C)", y = "dF/dT",
+                 caption = paste0("dark blue = ligand (all wells overlaid); ",
+                                  "grey = reference; dashed = ligand Tm (labelled)",
+                                  if (has_ref) " and reference Tm (dotdash)")) +
+            { if (length(tr) == 2 && !anyNA(tr)) coord_cartesian(xlim = tr) } +
+            theme_bw(base_size = 10) +
+            theme(plot.caption = element_text(colour = "grey40", size = 7))
+          p_fl + p_dv + patchwork::plot_layout(widths = c(1, 1))
+        }
+        # one page per target: delta Tm per well/ligand vs the reference
+        delta_overview_page <- function(tgt, dtab, ref_lg) {
+          dd <- dtab %>% filter(.data$target == !!tgt, !is.na(ligand),
+                                !is.na(.data[["delta Tm"]]))
+          if (!is.na(ref_lg)) dd <- filter(dd, ligand != ref_lg)
+          ls <- nat_lig_order(unique(dd$ligand))
+          if (!length(ls)) return(NULL)
+          dd <- dd %>% mutate(ligand = factor(ligand, levels = rev(ls)))
+          dm <- dd %>% group_by(ligand) %>%
+            summarise(d = suppressWarnings(median(.data[["delta Tm"]], na.rm = TRUE)),
+                      .groups = "drop")
+          ggplot(dd, aes(.data[["delta Tm"]], ligand)) +
+            geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
+            geom_point(colour = "#08519C", size = 1.8, alpha = 0.7, na.rm = TRUE) +
+            geom_point(data = dm, aes(x = d), colour = "black", size = 2.4,
+                       na.rm = TRUE) +
+            labs(title = paste0(tgt, " \u2014 \u0394Tm vs reference (\u00b0C; ",
+                                "black = ligand median, blue = wells)"),
+                 x = "\u0394Tm (\u00b0C)", y = NULL) +
+            theme_bw(base_size = 10)
+        }
+
         # all groups matching the current filter, one page per group
         gs <- groups()
         if (length(gs) == 0) {
@@ -1640,8 +1832,6 @@ dsfServer <- function(id) {
         }
 
         cols <- group_cols_active()
-        mc_df <- mc_plot()
-        deri_df <- deri_plot()
         key_raw <- mc_df$.group_key
         key_deri <- deri_df$.group_key
         ref_raw <- mc_ref_rows_display()
@@ -1656,46 +1846,129 @@ dsfServer <- function(id) {
         # loop, so drive a Progress panel bound to the session explicitly and
         # keep a sticky notification in case the panel cannot be displayed
         msg_id <- paste0("pdf_gen_", session$ns(""))
-        showNotification(sprintf("Generating %d PDF pages - this can take a while...",
-                                 length(gs)),
+        showNotification("Generating PDF export - this can take a while...",
                          type = "message", duration = NULL, id = msg_id)
         progress <- shiny::Progress$new(session = session, min = 0, max = 1)
         progress$set(message = "Generating vector PDFs", value = 0)
 
         tryCatch({
-          pages <- vector("list", length(gs))
-          for (i in seq_along(gs)) {
-            pages[[i]] <- build_pdf_page(gs[[i]], cols, key_raw, key_deri,
-                                         ref_raw, ref_deri, mc_df, deri_df,
-                                         color_var, tr, title = row_header_text(gs[[i]]))
-            progress$set(value = 0.9 * i / length(gs),
-                         detail = sprintf("%s (%d/%d)", gs[[i]], i, length(gs)))
-          }
-          progress$set(value = 0.95, detail = "Writing PDFs...")
-
           dev_fn <- if (capabilities("cairo")) grDevices::cairo_pdf else grDevices::pdf
 
-          # Combined multi-page PDF (one page per group) ...
-          combined <- file.path(plot_dir, "000_all_groups.pdf")
-          dev_fn(combined, width = 14, height = 6)
-          tryCatch(
-            for (p in pages) print(p),
-            error = function(e) showNotification(paste("Some PDF pages failed:", e$message),
-                                                 type = "warning", duration = 8),
-            finally = grDevices::dev.off()
-          )
+          if (has_tl) {
+            # ---- reference Tm (shared by the ligand pages and the overview) --
+            ref_rows_tbl <- mc_ref_rows()
+            ref_set <- !is.null(ref_rows_tbl) && nrow(ref_rows_tbl) > 0
+            ref_lg <- NA_character_
+            ref_tm_tbl <- NULL
+            if (ref_set) {
+              rd <- ref_def()
+              i <- which(rd$cols == "ligand")
+              if (length(i) == 1) ref_lg <- rd$vals[[i]]
+              rw <- dplyr::distinct(ref_rows_tbl, plate, well)
+              ref_tbl <- mt %>% inner_join(rw, by = c("plate", "well"))
+              if (isTRUE(input$overlay_by_target)) {
+                ref_tm_tbl <- ref_tbl %>% group_by(target) %>%
+                  summarise(`ref Tm` = round(suppressWarnings(median(tm, na.rm = TRUE)), 2),
+                            .groups = "drop")
+              } else {
+                ref_tm_tbl <- tibble(target = NA_character_,
+                                     `ref Tm` = round(suppressWarnings(median(ref_tbl$tm, na.rm = TRUE)), 2))
+              }
+            }
+            ref_tm_for <- function(tgt) {
+              if (!ref_set || is.null(ref_tm_tbl)) return(NA_real_)
+              hit <- ref_tm_tbl$`ref Tm`[is.na(ref_tm_tbl$target) |
+                                           ref_tm_tbl$target == tgt]
+              if (length(hit)) hit[1] else NA_real_
+            }
 
-          # ... plus one standalone PDF per group.
-          for (i in seq_along(gs)) {
-            ggsave(file.path(plot_dir, sprintf("%03d_%s.pdf", i, sanitize_filename(gs[[i]]))),
-                   plot = pages[[i]], width = 14, height = 6, device = dev_fn)
+            # ---- per-target files: one page per ligand --------------------
+            targets <- sort(unique(mc_df$target[!is.na(mc_df$target)]))
+            for (tgt in targets) {
+              ligs <- nat_lig_order(unique(mc_df$ligand[!is.na(mc_df$ligand) &
+                                                          mc_df$target == tgt]))
+              ref_tm <- ref_tm_for(tgt)
+              dev_fn(file.path(plot_dir, paste0("Plots_", sanitize_filename(tgt), ".pdf")),
+                     width = 10, height = 4)
+              tryCatch(
+                for (lg in ligs) {
+                  tm_med <- suppressWarnings(median(
+                    mt$tm[!is.na(mt$target) & mt$target == tgt &
+                            !is.na(mt$ligand) & mt$ligand == lg], na.rm = TRUE))
+                  page_ref_tm <- if (identical(lg, ref_lg)) NA_real_ else ref_tm
+                  delta <- if (is.finite(tm_med) && is.finite(page_ref_tm))
+                    round(tm_med - page_ref_tm, 2) else NA_real_
+                  p <- plot_ligand_page(tgt, lg, tm_med, delta, page_ref_tm, tr)
+                  if (!is.null(p)) print(p)
+                },
+                error = function(e) showNotification(
+                  paste0("Some pages failed for ", tgt, ": ", e$message),
+                  type = "warning", duration = 8),
+                finally = grDevices::dev.off())
+              done <- 0.9 * which(targets == tgt) / length(targets)
+              progress$set(value = done, detail = tgt)
+            }
+
+            # ---- delta Tm overview (needs a configured reference) ---------
+            if (ref_set) {
+              dtab <- if (isTRUE(input$overlay_by_target)) {
+                mt %>% left_join(ref_tm_tbl %>% filter(!is.na(target)), by = "target") %>%
+                  mutate(`delta Tm` = round(tm - `ref Tm`, 2))
+              } else {
+                mt %>% mutate(`delta Tm` = round(tm - ref_tm_tbl$`ref Tm`[1], 2))
+              }
+              max_ligs <- max(vapply(targets, function(tg) {
+                d <- dtab %>% filter(.data$target == tg, !is.na(ligand))
+                if (!is.na(ref_lg)) d <- filter(d, ligand != ref_lg)
+                nrow(distinct(d, ligand))
+              }, numeric(1)), 1)
+              progress$set(value = 0.95, detail = "Delta Tm overview...")
+              dev_fn(file.path(plot_dir, "DeltaTm_overview.pdf"),
+                     width = 8, height = max(6, 0.28 * max_ligs + 1.5))
+              tryCatch(
+                for (tgt in targets) {
+                  p <- delta_overview_page(tgt, dtab, ref_lg)
+                  if (!is.null(p)) print(p)
+                },
+                error = function(e) showNotification(
+                  paste("Delta Tm overview failed:", e$message),
+                  type = "warning", duration = 8),
+                finally = grDevices::dev.off())
+            }
+            progress$set(value = 0.97, detail = "Writing PDFs...")
+            pdf_count <- length(list.files(plot_dir, pattern = "\\.pdf$"))
+          } else {
+            # ---- no target/ligand annotations: previous per-group export ---
+            pages <- vector("list", length(gs))
+            for (i in seq_along(gs)) {
+              pages[[i]] <- build_pdf_page(gs[[i]], cols, key_raw, key_deri,
+                                           ref_raw, ref_deri, mc_df, deri_df,
+                                           color_var, tr, title = row_header_text(gs[[i]]))
+              progress$set(value = 0.9 * i / length(gs),
+                           detail = sprintf("%s (%d/%d)", gs[[i]], i, length(gs)))
+            }
+            progress$set(value = 0.95, detail = "Writing PDFs...")
+
+            combined <- file.path(plot_dir, "000_all_groups.pdf")
+            dev_fn(combined, width = 14, height = 6)
+            tryCatch(
+              for (p in pages) print(p),
+              error = function(e) showNotification(paste("Some PDF pages failed:", e$message),
+                                                   type = "warning", duration = 8),
+              finally = grDevices::dev.off()
+            )
+            for (i in seq_along(gs)) {
+              ggsave(file.path(plot_dir, sprintf("%03d_%s.pdf", i, sanitize_filename(gs[[i]]))),
+                     plot = pages[[i]], width = 14, height = 6, device = dev_fn)
+            }
+            pdf_count <- length(list.files(plot_dir, pattern = "\\.pdf$"))
           }
 
           pdf_files <- list.files(plot_dir, pattern = "\\.pdf$")
           zip::zip(zipfile = file, files = pdf_files, root = plot_dir)
           progress$close()
           removeNotification(msg_id)
-          showNotification(sprintf("PDF export ready: %d pages.", length(gs)),
+          showNotification(sprintf("PDF export ready: %d files.", pdf_count),
                            type = "message", duration = 6)
         }, error = function(e) {
           progress$close()
